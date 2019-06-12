@@ -1,0 +1,63 @@
+{
+	"name": "plz-vscode",
+	"description": "A VSCode language server integration for Please",
+	"author": "peter.ebden@gmail.com",
+	"license": "Apache-2.0",
+    "icon": "plz_128.png",
+	"version": "0.1.0",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/thought-machine/please-vscode"
+	},
+	"publisher": "please-build",
+	"categories": [],
+	"keywords": [],
+	"engines": {
+		"vscode": "1.35.x"
+	},
+	"activationEvents": [
+		"onLanguage:plz"
+	],
+	"main": "./out/extension",
+	"contributes": {
+		"languages": [
+			{
+				"id": "plz",
+				"aliases": [
+					"Please",
+					"please"
+				],
+				"filenames": [
+					"BUILD"
+				],
+                "extensions": [
+                    "*.plz",
+                    "*.build_defs"
+                ],
+				"configuration": "./language-configuration.json"
+			}
+		]
+	},
+	"grammars": [{
+		"language": "plz",
+		"scopeName": "source.plz",
+		"path": "./grammar.json"
+	}],
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"watch": "tsc -b -w"
+	},
+	"dependencies": {
+		"vsce": "^1.63.0",
+		"vscode-languageclient": "^4.1.4"
+	},
+	"devDependencies": {
+		"@types/mocha": "^5.2.0",
+		"@types/node": "^8.0.0",
+		"tslint": "^5.16.0",
+		"typescript": "^3.5.1",
+		"vscode": "^1.1.34"
+	}
+}
