@@ -33,7 +33,8 @@
         ],
         "extensions": [
           ".plz",
-          ".build_defs"
+          ".build_defs",
+          ".build"
         ],
         "configuration": "./syntax/language-configuration.json"
       }
