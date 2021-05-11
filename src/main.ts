@@ -1,53 +1,36 @@
-import * as path from 'path';
-import { workspace, ExtensionContext, languages, IndentAction } from 'vscode';
+import * as vscode from 'vscode';
 
-import {
-    Executable,
-	LanguageClient,
-	LanguageClientOptions,
-	ServerOptions,
-	TransportKind
-} from 'vscode-languageclient';
+import { GoDebugConfigurationProvider } from './goDebugConfiguration';
+import { startLanguageServer } from './languageServer';
+import { getBinPathFromEnvVar } from './utils/pathUtils'
 
-let client: LanguageClient;
-
-export function activate(context: ExtensionContext) {
-	languages.setLanguageConfiguration('plz', {
-		onEnterRules: [
-			{
-				beforeText: /^\s*(?:def|for|if|elif|else).*?:\s*$/,
-				action: { indentAction: IndentAction.Indent }
-			}
-		]
-	});
-	let serverOptions: ServerOptions = {
-		run: {
-            command: 'plz',
-            args: ['tool', 'langserver'],
-        },
-		debug: {
-            command: 'plz',
-            args: ['tool', 'langserver', '-v', '4'],
-		}
-	};
-	let clientOptions: LanguageClientOptions = {
-		documentSelector: [{ scheme: 'file', language: 'plz' }],
-		synchronize: {
-			fileEvents: workspace.createFileSystemWatcher('BUILD*')
-		}
-	};
-	client = new LanguageClient(
-		'plzLanguageServer',
-		'Please Language Server',
-		serverOptions,
-		clientOptions
-	);
-	client.start();
-}
-
-export function deactivate(): Thenable<void> | undefined {
-	if (!client) {
+export function activate(context: vscode.ExtensionContext) {
+	// Ensure that Please is installed
+	const plzBinPath = getPleaseBinPath();
+	if (!plzBinPath) {
+		vscode.window.showErrorMessage(
+			'Cannot find Please. Install from https://github.com/thought-machine/please and ensure it is in the "PATH" environment variable.'
+		)
 		return undefined;
 	}
-	return client.stop();
+
+	// Start language server
+	startLanguageServer(context);
+
+	// Setup Go debugging
+	context.subscriptions.push(
+		vscode.debug.registerDebugConfigurationProvider('plz-go', new GoDebugConfigurationProvider(plzBinPath))
+	)
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			'plz-go.debug.setTestTarget',
+			async (): Promise<string> => {
+				return await vscode.window.showInputBox({ placeHolder: 'Enter test target to debug' });
+			}
+		)
+	);
+}
+
+function getPleaseBinPath(): string | undefined {
+	return getBinPathFromEnvVar('plz', process.env['PATH'], false)
 }
