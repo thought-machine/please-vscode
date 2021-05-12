@@ -64,9 +64,9 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
 }
 
 function getDelveBinPath(): string | undefined {
-    const DLV_TOOL = 'dlv';
+    const dlvTool = 'dlv';
 
-    return getBinPathFromEnvVar(DLV_TOOL, process.env['GOPATH'], true) || getBinPathFromEnvVar(DLV_TOOL, process.env['PATH'], false)
+    return getBinPathFromEnvVar(dlvTool, process.env['GOPATH'], true) || getBinPathFromEnvVar(dlvTool, process.env['PATH'], false)
 }
 
 // Walks up the current directory until it finds a `.plzconfig` file

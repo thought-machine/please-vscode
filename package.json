@@ -1,7 +1,7 @@
 {
   "name": "plz-vscode",
   "displayName": "Please",
-  "description": "Please BUILD integration",
+  "description": "Integrations for the Please build system",
   "author": "peter.ebden@gmail.com",
   "license": "Apache-2.0",
   "icon": "plz_128.png",
