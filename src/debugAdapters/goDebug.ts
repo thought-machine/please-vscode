@@ -4,8 +4,9 @@
  *--------------------------------------------------------*/
 
 // This fork currently relies on some specifics of https://github.com/thought-machine/please/blob/master/rules/go_rules.build_defs:
-// - `--config=dbg` flag producing unoptimised code for debugging
-// - Path trimming
+// - `--config=dbg` flag producing unoptimised code for debugging.
+// - Path trimming during code compilation.
+// - TESTS environment variable for targeting a specific test.
 
 import { ChildProcess, execFile, spawn } from 'child_process';
 import * as fs from 'fs';
@@ -255,6 +256,7 @@ const fatalThrowID = -2;
 interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
 	request: 'launch';
 	target: string; // Please target
+	test?: string; // Specific test function
 	stopOnEntry?: boolean;
 	repoRoot: string;
 	plzBinPath: string;
@@ -391,7 +393,7 @@ export class Delve {
 				'--plain_output',
 				'--verbosity=info',
 				'run',
-				`--cmd="\$TESTS= ${launchArgs.dlvBinPath} ${dlvArgs.join(' ')}"`,
+				`--cmd="${launchArgs.dlvBinPath} ${dlvArgs.join(' ')}"`,
 				target,
 				'--in_tmp_dir',
 			];
@@ -400,7 +402,7 @@ export class Delve {
 
 			this.debugProcess = spawn(launchArgs.plzBinPath, plzArgs, {
 				cwd: launchArgs.repoRoot,
-				env: process.env
+				env: Object.assign({}, process.env, { TESTS: launchArgs.test || '' }),
 			});
 
 			function connectClient(port: number, host: string) {

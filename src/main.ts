@@ -29,6 +29,14 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		)
 	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			'plz-go.debug.setTestFunction',
+			async (): Promise<string> => {
+				return await vscode.window.showInputBox({ placeHolder: 'Enter test function to debug (optional)' });
+			}
+		)
+	);
 }
 
 function getPleaseBinPath(): string | undefined {

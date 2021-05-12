@@ -77,7 +77,8 @@
           "go"
         ],
         "variables": {
-          "setTestTarget": "plz-go.debug.setTestTarget"
+          "setTestTarget": "plz-go.debug.setTestTarget",
+          "setTestFunction": "plz-go.debug.setTestFunction"
         },
         "configurationSnippets": [
           {
@@ -88,6 +89,7 @@
               "type": "plz-go",
               "request": "launch",
               "target": "^\"\\${command:setTestTarget}\"",
+              "test": "^\"\\${command:setTestFunction}\"",
               "internalConsoleOptions": "openOnSessionStart"
             }
           }
@@ -99,6 +101,10 @@
               "target": {
                 "type": "string",
                 "description": "Test target to debug"
+              },
+              "test": {
+                "type": "string",
+                "description": "Test function to debug"
               }
             }
           }
