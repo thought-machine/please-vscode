@@ -71,11 +71,11 @@ function getDelveBinPath(): string | undefined {
 
 // Walks up the current directory until it finds a `.plzconfig` file
 function resolvePleaseRepoRoot(currentDirectory: string): string | undefined {
-    const PLZ_CONFIG = '.plzconfig';
+    const plzConfig = '.plzconfig';
 
     do {
         try {
-            const status = fs.lstatSync(path.join(currentDirectory, PLZ_CONFIG));
+            const status = fs.lstatSync(path.join(currentDirectory, plzConfig));
             if (status.isFile()) {
                 return currentDirectory;
             }
