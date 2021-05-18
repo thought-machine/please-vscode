@@ -105,8 +105,7 @@
               "type": "plz-go",
               "request": "launch",
               "target": "^\"\\${command:setTestTarget}\"",
-              "test": "^\"\\${command:setTestFunction}\"",
-              "internalConsoleOptions": "openOnSessionStart"
+              "test": "^\"\\${command:setTestFunction}\""
             }
           }
         ],

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
 
-export function startLanguageServer(context: vscode.ExtensionContext) {
+export function startLanguageClient(): vscode.Disposable {
     vscode.languages.setLanguageConfiguration('plz', {
         onEnterRules: [
             {
@@ -32,7 +32,5 @@ export function startLanguageServer(context: vscode.ExtensionContext) {
         }
     );
 
-    const languageServerDisposable = client.start();
-
-    context.subscriptions.push(languageServerDisposable);
+    return client.start();
 }

@@ -1,15 +1,40 @@
 import { execFile } from 'child_process';
-import * as fs from 'fs';
 import * as path from 'path';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
 
 import { getBinPathFromEnvVar } from './utils/pathUtils';
+import {getPleaseBinPath, resolvePleaseRepoRoot} from './please';
 
 const PLZ_MIN_VERSION = '16.1.0-beta.1';
 
 export class GoDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
-    constructor(private plzBinPath: string = 'plz') { }
+    constructor(private debugType: string) { }
+
+    public async provideDebugConfigurations(
+        folder: vscode.WorkspaceFolder | undefined,
+        token?: vscode.CancellationToken
+    ): Promise<vscode.DebugConfiguration[]> {
+        const debugConfigurations = [
+            {
+                label: 'Please: Launch Go test target',
+                description: 'Debug a test target',
+                config: {
+                    name: 'Launch test target',
+                    type: this.debugType,
+                    request: 'launch',
+                    target: '${command:setTestTarget}',
+                    test: '${command:setTestFunction}',
+                }
+            }
+        ];
+
+        const choice = await vscode.window.showQuickPick(debugConfigurations, {
+            placeHolder: 'Choose debug configuration'
+        });
+
+        return choice ? [choice.config] : [];
+    }
 
     public async resolveDebugConfiguration(
         folder: vscode.WorkspaceFolder | undefined,
@@ -21,13 +46,15 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
             return undefined;
         }
 
+        const plzBinPath = getPleaseBinPath();
+
         // Attempt to get current Please version
         // i.e. `plz --version` => `Please version 16.1.0-beta.1` => `16.1.0-beta.1`
         const currentPlzVersion = await new Promise<string | null>((resolve) => {
-            execFile(this.plzBinPath, ['--version'], (err, stdout) => {
+            execFile(plzBinPath, ['--version'], (err, stdout) => {
                 if (err) return resolve(null);
                 const matches = stdout.match(/\d+\.\d+\.\d+\S*/);
-                return resolve(matches && matches[0])
+                return resolve(matches && matches[0]);
             });
         });
 
@@ -47,17 +74,18 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
         }
         debugConfiguration['repoRoot'] = plzRepoRoot;
 
-        debugConfiguration['plzBinPath'] = this.plzBinPath;
+        debugConfiguration['plzBinPath'] = plzBinPath;
 
         // Ensure that Delve is installed
         const dlvBinPath = getDelveBinPath();
         if (!dlvBinPath) {
-            vscode.window.showErrorMessage(
-                'Cannot find Delve debugger. Install from https://github.com/go-delve/delve and ensure it is in your Go tools path, "GOPATH/bin" or "PATH".'
-            )
+            vscode.window.showErrorMessage('Cannot find Delve debugger. Install from https://github.com/go-delve/delve.');
             return undefined;
         }
         debugConfiguration['dlvBinPath'] = dlvBinPath;
+
+        // Get the `Debug Console` panel focused
+        vscode.commands.executeCommand('workbench.debug.action.focusRepl');
 
         return debugConfiguration;
     }
@@ -69,20 +97,3 @@ function getDelveBinPath(): string | undefined {
     return getBinPathFromEnvVar(dlvTool, process.env['GOPATH'], true) || getBinPathFromEnvVar(dlvTool, process.env['PATH'], false)
 }
 
-// Walks up the current directory until it finds a `.plzconfig` file
-function resolvePleaseRepoRoot(currentDirectory: string): string | undefined {
-    const plzConfig = '.plzconfig';
-
-    do {
-        try {
-            const status = fs.lstatSync(path.join(currentDirectory, plzConfig));
-            if (status.isFile()) {
-                return currentDirectory;
-            }
-        } catch (e) { }
-
-        currentDirectory = path.dirname(currentDirectory)
-    } while (currentDirectory !== '/');
-
-    return undefined;
-}
