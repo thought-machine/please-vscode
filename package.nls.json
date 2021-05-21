@@ -1,4 +1,4 @@
 {
-	"displayName": "Please BUILD language",
-	"description": "Provides syntax highlighting, bracket matching and folding in Please BUILD files."
+	"displayName": "Integrations for the Please build system",
+	"description": "Provides language support for Please BUILD files, target debugging and more."
 }

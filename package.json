@@ -1,7 +1,7 @@
 {
   "name": "plz-vscode",
   "displayName": "Please",
-  "description": "A VSCode language server integration for Please",
+  "description": "Integrations for the Please build system",
   "author": "peter.ebden@gmail.com",
   "license": "Apache-2.0",
   "icon": "plz_128.png",
@@ -10,17 +10,40 @@
     "type": "git",
     "url": "https://github.com/thought-machine/please-vscode"
   },
+  "bugs": {
+    "url": "https://github.com/thought-machine/please-vscode/issues"
+  },
   "publisher": "please-build",
-  "categories": [],
+  "categories": [
+    "Programming Languages",
+    "Debuggers"
+  ],
   "keywords": [],
   "engines": {
-    "vscode": "^1.36.0"
+    "vscode": "^1.52.0"
   },
   "activationEvents": [
+    "workspaceContains:.plzconfig",
     "onLanguage:plz"
   ],
   "main": "./out/main",
   "contributes": {
+    "configuration": {
+			"type": "object",
+			"properties": {
+				"plzLanguageServer.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Traces the communication between VS Code and the Please Language Server."
+				}
+			}
+		},
     "languages": [
       {
         "id": "plz",
@@ -37,6 +60,15 @@
           ".build"
         ],
         "configuration": "./syntax/language-configuration.json"
+      },
+      {
+        "id": "go",
+        "extensions": [
+          ".go"
+        ],
+        "aliases": [
+          "Go"
+        ]
       }
     ],
     "grammars": [
@@ -44,6 +76,54 @@
         "language": "plz",
         "scopeName": "source.plz",
         "path": "./syntax/grammar.json"
+      }
+    ],
+    "breakpoints": [
+      {
+        "language": "go"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "plz-go",
+        "label": "Please Go",
+        "program": "./out/debugAdapters/goDebug.js",
+        "runtime": "node",
+        "languages": [
+          "go"
+        ],
+        "variables": {
+          "setTestTarget": "plz-go.debug.setTestTarget",
+          "setTestFunction": "plz-go.debug.setTestFunction"
+        },
+        "configurationSnippets": [
+          {
+            "label": "Please: Launch Go test target",
+            "description": "Debug a test target",
+            "body": {
+              "name": "Launch test target",
+              "type": "plz-go",
+              "request": "launch",
+              "target": "^\"\\${command:setTestTarget}\"",
+              "test": "^\"\\${command:setTestFunction}\""
+            }
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "Test target to debug"
+              },
+              "test": {
+                "type": "string",
+                "description": "Test function to debug"
+              }
+            }
+          }
+        }
       }
     ]
   },
@@ -56,18 +136,21 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "watch": "tsc -b -w"
   },
   "dependencies": {
-    "vscode-languageclient": "^5.2.1"
+    "json-rpc2": "^2.0.0",
+    "semver": "^7.3.5",
+    "tree-kill": "file:third_party/tree-kill",
+    "vscode-debugadapter": "^1.47.0",
+    "vscode-debugprotocol": "^1.47.0",
+    "vscode-languageclient": "^7.0.0",
+    "vscode-languageserver-protocol": "^3.16.0"
   },
   "devDependencies": {
-    "@types/mocha": "^5.2.0",
-    "@types/node": "^8.0.0",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3",
-    "vsce": "^1.66.0",
-    "vscode": "^1.1.35"
+    "@types/node": "^15.0.1",
+    "@types/semver": "^7.3.5",
+    "@types/vscode": "^1.55.0",
+    "typescript": "^4.2.4"
   }
 }
