@@ -29,43 +29,29 @@ export function getBinPathFromEnvVar(toolName: string, envVarValue: string, appe
 	return null;
 }
 
-export function getBinPathWithPreferredGopathGoroot(
+export function getBinPath(
 	toolName: string,
-	preferredGopaths: string[],
-	preferredGoroot?: string,
-	alternateTool?: string,
 	useCache = true
 ): string {
-	const r = getBinPathWithPreferredGopathGorootWithExplanation(
+	const r = getBinPathWithExplanation(
 		toolName,
-		preferredGopaths,
-		preferredGoroot,
-		alternateTool,
 		useCache
 	);
 	return r.binPath;
 }
 
-// Is same as getBinPathWithPreferredGopathGoroot, but returns why the
+// Is same as getBinPath, but returns why the
 // returned path was chosen.
-export function getBinPathWithPreferredGopathGorootWithExplanation(
+export function getBinPathWithExplanation(
 	toolName: string,
-	preferredGopaths: string[],
-	preferredGoroot?: string,
-	alternateTool?: string,
 	useCache = true
 ): { binPath: string; why?: string } {
-	if (alternateTool && path.isAbsolute(alternateTool) && executableFileExists(alternateTool)) {
-		binPathCache[toolName] = alternateTool;
-		return { binPath: alternateTool, why: 'alternateTool' };
-	}
-
 	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
 	if (useCache && binPathCache[toolName]) {
 		return { binPath: binPathCache[toolName], why: 'cached' };
 	}
 
-	const binname = alternateTool && !path.isAbsolute(alternateTool) ? alternateTool : toolName;
+	const binname = toolName;
 	const found = (why: string) => (binname === toolName ? why : 'alternateTool');
 	const pathFromGoBin = getBinPathFromEnvVar(binname, process.env['GOBIN'], false);
 	if (pathFromGoBin) {
@@ -73,19 +59,8 @@ export function getBinPathWithPreferredGopathGorootWithExplanation(
 		return { binPath: pathFromGoBin, why: binname === toolName ? 'gobin' : 'alternateTool' };
 	}
 
-	for (const preferred of preferredGopaths) {
-		if (typeof preferred === 'string') {
-			// Search in the preferred GOPATH workspace's bin folder
-			const pathFrompreferredGoPath = getBinPathFromEnvVar(binname, preferred, true);
-			if (pathFrompreferredGoPath) {
-				binPathCache[toolName] = pathFrompreferredGoPath;
-				return { binPath: pathFrompreferredGoPath, why: found('gopath') };
-			}
-		}
-	}
-
 	// Check GOROOT (go, gofmt, godoc would be found here)
-	const pathFromGoRoot = getBinPathFromEnvVar(binname, preferredGoroot || getCurrentGoRoot(), true);
+	const pathFromGoRoot = getBinPathFromEnvVar(binname, getCurrentGoRoot(), true);
 	if (pathFromGoRoot) {
 		binPathCache[toolName] = pathFromGoRoot;
 		return { binPath: pathFromGoRoot, why: found('goroot') };

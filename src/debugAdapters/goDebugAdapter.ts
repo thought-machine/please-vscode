@@ -32,7 +32,7 @@ import {
 import { DebugProtocol } from 'vscode-debugprotocol';
 import {
 	fixDriveCasingInWindows,
-	getBinPathWithPreferredGopathGoroot,
+	getBinPath,
 } from '../utils/pathUtils';
 import { killProcessTree } from '../utils/processUtils';
 
@@ -402,7 +402,7 @@ export class Delve {
 
 			this.debugProcess = spawn(launchArgs.plzBinPath, plzArgs, {
 				cwd: launchArgs.repoRoot,
-				env: Object.assign({}, process.env, { TESTS: launchArgs.test || '' }),
+				env: Object.assign({}, process.env, { TESTS: launchArgs.test ? '/' + launchArgs.test : '' }),
 			});
 
 			function connectClient(port: number, host: string) {
@@ -1557,7 +1557,7 @@ export class GoDebugSession extends LoggingDebugSession {
 		}
 		return new Promise((resolve) => {
 			execFile(
-				getBinPathWithPreferredGopathGoroot('go', []),
+				getBinPath('go'),
 				['list', '-f', '{{.Name}} {{.ImportPath}}'],
 				{ cwd: dir, env: process.env },
 				(err, stdout, stderr) => {
@@ -2031,7 +2031,7 @@ async function removeFile(filePath: string): Promise<void> {
 function queryGOROOT(cwd: any, env: any): Promise<string> {
 	return new Promise<string>((resolve) => {
 		execFile(
-			getBinPathWithPreferredGopathGoroot('go', []),
+			getBinPath('go'),
 			['env', 'GOROOT'],
 			{ cwd, env },
 			(err, stdout, stderr) => {
