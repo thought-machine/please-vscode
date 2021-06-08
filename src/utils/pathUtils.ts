@@ -32,45 +32,31 @@ export function getBinPathFromEnvVar(toolName: string, envVarValue: string, appe
 export function getBinPath(
 	toolName: string,
 	useCache = true
-): string {
-	const r = getBinPathWithExplanation(
-		toolName,
-		useCache
-	);
-	return r.binPath;
-}
-
-// Is same as getBinPath, but returns why the
-// returned path was chosen.
-export function getBinPathWithExplanation(
-	toolName: string,
-	useCache = true
-): { binPath: string; why?: string } {
+): string | undefined {
 	// FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
 	if (useCache && binPathCache[toolName]) {
-		return { binPath: binPathCache[toolName], why: 'cached' };
+		return binPathCache[toolName];
 	}
 
 	const binname = toolName;
-	const found = (why: string) => (binname === toolName ? why : 'alternateTool');
 	const pathFromGoBin = getBinPathFromEnvVar(binname, process.env['GOBIN'], false);
 	if (pathFromGoBin) {
 		binPathCache[toolName] = pathFromGoBin;
-		return { binPath: pathFromGoBin, why: binname === toolName ? 'gobin' : 'alternateTool' };
+		return pathFromGoBin;
 	}
 
 	// Check GOROOT (go, gofmt, godoc would be found here)
 	const pathFromGoRoot = getBinPathFromEnvVar(binname, getCurrentGoRoot(), true);
 	if (pathFromGoRoot) {
 		binPathCache[toolName] = pathFromGoRoot;
-		return { binPath: pathFromGoRoot, why: found('goroot') };
+		return pathFromGoRoot;
 	}
 
 	// Finally search PATH parts
 	const pathFromPath = getBinPathFromEnvVar(binname, envPath, false);
 	if (pathFromPath) {
 		binPathCache[toolName] = pathFromPath;
-		return { binPath: pathFromPath, why: found('path') };
+		return pathFromPath;
 	}
 
 	// Check common paths for go
@@ -82,14 +68,12 @@ export function getBinPathWithExplanation(
 		for (const p of defaultPathsForGo) {
 			if (executableFileExists(p)) {
 				binPathCache[toolName] = p;
-				return { binPath: p, why: 'default' };
+				return p;
 			}
 		}
-		return { binPath: '' };
 	}
 
-	// Else return the binary name directly (this will likely always fail downstream)
-	return { binPath: toolName };
+	return undefined;
 }
 
 /**

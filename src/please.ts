@@ -9,7 +9,7 @@ export const PLZ_TOOL = 'plz';
 export const PLZ_CONFIG = '.plzconfig';
 
 export function binPath(): string | undefined {
-    return getBinPath(PLZ_TOOL) || undefined;
+    return getBinPath(PLZ_TOOL);
 }
 
 // Get version (i.e. `plz --version` => `Please version 16.1.0-beta.1` => `16.1.0-beta.1`)

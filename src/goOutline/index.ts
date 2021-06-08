@@ -7,7 +7,6 @@ import {ChildProcess, execFile} from 'child_process';
 import * as vscode from 'vscode';
 
 import {getBinPath} from  '../utils/pathUtils';
-//import { promptForMissingTool, promptForUpdatingTool } from './goInstallTools';
 import {NearestNeighborDict, Node} from './avlTree';
 
 // Keep in sync with https://github.com/ramya-rao-a/go-outline
@@ -120,11 +119,7 @@ export function runGoOutline(
 }
 
 export function getGoOutlineBinPath(): string | undefined {
-	const path = getBinPath('go-outline')
-	if(path === 'go-outline') {
-		return undefined
-	}
-	return path;
+	return getBinPath('go-outline');
 }
 
 const goKindToCodeKind: { [key: string]: vscode.SymbolKind } = {
