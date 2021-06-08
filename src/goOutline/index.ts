@@ -120,7 +120,11 @@ export function runGoOutline(
 }
 
 export function getGoOutlineBinPath(): string | undefined {
-	return getBinPath('go-outline') || undefined;
+	const path = getBinPath('go-outline')
+	if(path === 'go-outline') {
+		return undefined
+	}
+	return path;
 }
 
 const goKindToCodeKind: { [key: string]: vscode.SymbolKind } = {
