@@ -1,6 +1,7 @@
 import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as semver from 'semver';
 import * as vscode from 'vscode';
 
 import { getBinPath } from './utils/pathUtils';
@@ -29,6 +30,15 @@ export async function version(): Promise<string> {
         });
     });
 }
+
+export async function ensureMinimumVersion(minVersion: string): Promise<undefined> {
+    if (semver.lt(await version(), minVersion)) {
+        throw new Error(`You need to be at least on Please version ${minVersion}. Go to https://github.com/thought-machine/please to update it.`);
+    }
+
+    return undefined;
+}
+
 
 // Retrieves target(s) with specified file as a source
 export async function getInputTargets(filename: string): Promise<Array<string>> {

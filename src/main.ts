@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { GoDebugCodeLensProvider } from './goDebugCodeLens';
+import { GoDebugConfigurationProvider } from './goDebugConfiguration';
 import { startLanguageClient } from './languageClient';
 import * as plz from './please';
 import { debug } from './goDebug';
@@ -17,35 +18,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Setup Go debugging
 	context.subscriptions.push(
+		vscode.debug.registerDebugConfigurationProvider('plz-go', new GoDebugConfigurationProvider('plz-go'))
+	);
+	context.subscriptions.push(
 		vscode.languages.registerCodeLensProvider({ language: 'go', scheme: 'file' }, new GoDebugCodeLensProvider())
-	);
-	context.subscriptions.push(
-		vscode.commands.registerCommand(
-			'plz-go.debug.chooseTestTarget',
-			async (args): Promise<string> => {
-				return await vscode.window.showQuickPick(args.targets, { placeHolder: 'Select the target associated with this test' });
-			}
-		)
-	);
-	let debugInitialised = false;
-	context.subscriptions.push(
-		vscode.debug.onDidTerminateDebugSession(() => debugInitialised = false)
 	);
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			'plz-go.debug.package',
 			async (args) => {
-				try {
-					if (debugInitialised || vscode.debug.activeDebugSession) {
-						throw new Error('Debug session has already been initialised');
-					}
-					debugInitialised = true;
-					await debug(args.document);
+				if (vscode.debug.activeDebugSession) {
+					vscode.window.showErrorMessage('Debug session has already been initialised');
+					return undefined;
 				}
-				catch (e) {
-					debugInitialised = false;
-					vscode.window.showErrorMessage(e.message);
-				}
+				await debug(args.document);
 			}
 		)
 	);
@@ -53,19 +39,36 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(
 			'plz-go.debug.test',
 			async (args) => {
-				try {
-					if (debugInitialised || vscode.debug.activeDebugSession) {
-						throw new Error('Debug session has already been initialised');
-					}
-					debugInitialised = true;
-					await debug(args.document, args.functionName);
+				if (vscode.debug.activeDebugSession) {
+					vscode.window.showErrorMessage('Debug session has already been initialised');
+					return undefined;
 				}
-				catch (e) {
-					debugInitialised = false;
-					vscode.window.showErrorMessage(e.message);
-				}
+				await debug(args.document, args.functionName);
+			}
+		)
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			'plz-go.debug.pickTestTarget',
+			async (args): Promise<string> => {
+				return await vscode.window.showQuickPick(args.targets, { placeHolder: 'Select the target associated with this test' });
+			}
+		)
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			'plz-go.debug.enterTestTarget',
+			async (): Promise<string> => {
+				return await vscode.window.showInputBox({ placeHolder: 'Enter test target to debug' });
+			}
+		)
+	);
+	context.subscriptions.push(
+		vscode.commands.registerCommand(
+			'plz-go.debug.enterTestFunction',
+			async (): Promise<string> => {
+				return await vscode.window.showInputBox({ placeHolder: 'Enter test function to debug (optional)' });
 			}
 		)
 	);
 }
-

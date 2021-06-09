@@ -93,7 +93,37 @@
           "go"
         ],
         "variables": {
-          "chooseTestTarget": "plz-go.debug.chooseTestTarget"
+          "pickTestTarget": "plz-go.debug.pickTestTarget",
+          "enterTestTarget": "plz-go.debug.enterTestTarget",
+          "enterTestFunction": "plz-go.debug.enterTestFunction"
+        },
+        "configurationSnippets": [
+          {
+            "label": "Please: Launch Go test target",
+            "description": "Debug a test target",
+            "body": {
+              "name": "Launch Go test target",
+              "type": "plz-go",
+              "request": "launch",
+              "target": "^\"\\${command:enterTestTarget}\"",
+              "test": "^\"\\${command:enterTestFunction}\""
+            }
+          }
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [],
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "Test target to debug"
+              },
+              "test": {
+                "type": "string",
+                "description": "Test function to debug"
+              }
+            }
+          }
         }
       }
     ]
