@@ -1,12 +1,9 @@
-import { execFile } from 'child_process';
-import * as path from 'path';
-import * as semver from 'semver';
 import * as vscode from 'vscode';
 
-import { getBinPathFromEnvVar } from './utils/pathUtils';
-import {getPleaseBinPath, resolvePleaseRepoRoot} from './please';
+import { getBinPath } from './utils/pathUtils';
+import * as plz from './please';
 
-const PLZ_MIN_VERSION = '16.1.0-beta.1';
+export const PLZ_DEBUG_MIN_VERSION = '16.1.0-beta.4';
 
 export class GoDebugConfigurationProvider implements vscode.DebugConfigurationProvider {
     constructor(private debugType: string) { }
@@ -20,7 +17,7 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
                 label: 'Please: Launch Go test target',
                 description: 'Debug a test target',
                 config: {
-                    name: 'Launch test target',
+                    name: 'Launch Go test target',
                     type: this.debugType,
                     request: 'launch',
                     target: '${command:setTestTarget}',
@@ -46,54 +43,31 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
             return undefined;
         }
 
-        const plzBinPath = getPleaseBinPath();
+        try {
+            await plz.ensureMinimumVersion(PLZ_DEBUG_MIN_VERSION);
 
-        // Attempt to get current Please version
-        // i.e. `plz --version` => `Please version 16.1.0-beta.1` => `16.1.0-beta.1`
-        const currentPlzVersion = await new Promise<string | null>((resolve) => {
-            execFile(plzBinPath, ['--version'], (err, stdout) => {
-                if (err) return resolve(null);
-                const matches = stdout.match(/\d+\.\d+\.\d+\S*/);
-                return resolve(matches && matches[0]);
-            });
-        });
+            debugConfiguration['plzBinPath'] = plz.binPath();
 
-        // If the current Please version is available, ensure it is up-to-date
-        if (currentPlzVersion && semver.lt(currentPlzVersion, PLZ_MIN_VERSION)) {
-            vscode.window.showErrorMessage(
-                `You need to be at least on Please version ${PLZ_MIN_VERSION}. Go to https://github.com/thought-machine/please to update it.`
-            )
+            const dlvBinPath = getBinPath('dlv');
+            if (!dlvBinPath) {
+                throw new Error('Cannot find Delve debugger. Install it from https://github.com/go-delve/delve.');
+            }
+            debugConfiguration['dlvBinPath'] = dlvBinPath;
+
+            const plzRepoRoot = plz.repoRoot();
+            if (!plzRepoRoot) {
+                throw new Error('You need to be inside a Please repo.')
+            }
+            debugConfiguration['repoRoot'] = plzRepoRoot;
+        } catch (e) {
+            vscode.window.showErrorMessage(e.message);
             return undefined;
         }
-
-        // Walk up the directory tree to the Please repo root
-        const plzRepoRoot = resolvePleaseRepoRoot(path.dirname(activeEditor.document.fileName));
-        if (!plzRepoRoot) {
-            vscode.window.showErrorMessage('You need to be inside a Please repo.')
-            return undefined;
-        }
-        debugConfiguration['repoRoot'] = plzRepoRoot;
-
-        debugConfiguration['plzBinPath'] = plzBinPath;
-
-        // Ensure that Delve is installed
-        const dlvBinPath = getDelveBinPath();
-        if (!dlvBinPath) {
-            vscode.window.showErrorMessage('Cannot find Delve debugger. Install from https://github.com/go-delve/delve.');
-            return undefined;
-        }
-        debugConfiguration['dlvBinPath'] = dlvBinPath;
 
         // Get the `Debug Console` panel focused
         vscode.commands.executeCommand('workbench.debug.action.focusRepl');
 
         return debugConfiguration;
     }
-}
-
-function getDelveBinPath(): string | undefined {
-    const dlvTool = 'dlv';
-
-    return getBinPathFromEnvVar(dlvTool, process.env['GOPATH'], true) || getBinPathFromEnvVar(dlvTool, process.env['PATH'], false)
 }
 

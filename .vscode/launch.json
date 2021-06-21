@@ -22,7 +22,7 @@
 			"type": "node",
 			"protocol": "inspector",
 			"request": "launch",
-			"program": "${workspaceFolder}/out/debugAdapters/goDebug.js",
+			"program": "${workspaceFolder}/out/debugAdapters/goDebugAdapter.js",
 			"args": [
 				"--server=4711"
 			],

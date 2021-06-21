@@ -29,21 +29,21 @@
   "main": "./out/main",
   "contributes": {
     "configuration": {
-			"type": "object",
-			"properties": {
-				"plzLanguageServer.trace.server": {
-					"scope": "window",
-					"type": "string",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
-					"default": "off",
-					"description": "Traces the communication between VS Code and the Please Language Server."
-				}
-			}
-		},
+      "type": "object",
+      "properties": {
+        "plz.trace.server": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the Please Language Server."
+        }
+      }
+    },
     "languages": [
       {
         "id": "plz",
@@ -87,25 +87,26 @@
       {
         "type": "plz-go",
         "label": "Please Go",
-        "program": "./out/debugAdapters/goDebug.js",
+        "program": "./out/debugAdapters/goDebugAdapter.js",
         "runtime": "node",
         "languages": [
           "go"
         ],
         "variables": {
-          "setTestTarget": "plz-go.debug.setTestTarget",
-          "setTestFunction": "plz-go.debug.setTestFunction"
+          "pickTestTarget": "plz-go.debug.pickTestTarget",
+          "enterTestTarget": "plz-go.debug.enterTestTarget",
+          "enterTestFunction": "plz-go.debug.enterTestFunction"
         },
         "configurationSnippets": [
           {
             "label": "Please: Launch Go test target",
             "description": "Debug a test target",
             "body": {
-              "name": "Launch test target",
+              "name": "Launch Go test target",
               "type": "plz-go",
               "request": "launch",
-              "target": "^\"\\${command:setTestTarget}\"",
-              "test": "^\"\\${command:setTestFunction}\""
+              "target": "^\"\\${command:enterTestTarget}\"",
+              "test": "^\"\\${command:enterTestFunction}\""
             }
           }
         ],
@@ -136,7 +137,8 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -b",
-    "watch": "tsc -b -w"
+    "watch": "tsc -b -w",
+    "prettify": "prettier --write ."
   },
   "dependencies": {
     "json-rpc2": "^2.0.0",
@@ -151,6 +153,7 @@
     "@types/node": "^15.0.1",
     "@types/semver": "^7.3.5",
     "@types/vscode": "^1.55.0",
+    "prettier": "2.3.0",
     "typescript": "^4.2.4"
   }
 }
