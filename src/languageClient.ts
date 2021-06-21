@@ -1,10 +1,10 @@
-import * as vscode from "vscode";
-import { LanguageClient } from "vscode-languageclient/node";
+import * as vscode from 'vscode';
+import { LanguageClient } from 'vscode-languageclient/node';
 
-import * as plz from "./please";
+import * as plz from './please';
 
 export function startLanguageClient(): vscode.Disposable {
-  vscode.languages.setLanguageConfiguration("plz", {
+  vscode.languages.setLanguageConfiguration('plz', {
     onEnterRules: [
       {
         beforeText: /^\s*(?:def|for|if|elif|else).*?:\s*$/,
@@ -14,22 +14,22 @@ export function startLanguageClient(): vscode.Disposable {
   });
 
   const client = new LanguageClient(
-    "plz",
-    "Please Language Server",
+    'plz',
+    'Please Language Server',
     {
       run: {
         command: plz.binPath(),
-        args: ["tool", "langserver"],
+        args: ['tool', 'langserver'],
       },
       debug: {
         command: plz.binPath(),
-        args: ["tool", "langserver", "-v", "4"],
+        args: ['tool', 'langserver', '-v', '4'],
       },
     },
     {
-      documentSelector: [{ scheme: "file", language: "plz" }],
+      documentSelector: [{ scheme: 'file', language: 'plz' }],
       synchronize: {
-        fileEvents: vscode.workspace.createFileSystemWatcher("BUILD*"),
+        fileEvents: vscode.workspace.createFileSystemWatcher('BUILD*'),
       },
     }
   );

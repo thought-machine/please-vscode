@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 
-var childProcess = require("child_process");
-const { existsSync } = require("fs");
+var childProcess = require('child_process');
+const { existsSync } = require('fs');
 var spawn = childProcess.spawn;
 var exec = childProcess.exec;
 
 module.exports = function (pid, signal, callback) {
-  if (typeof signal === "function" && callback === undefined) {
+  if (typeof signal === 'function' && callback === undefined) {
     callback = signal;
     signal = undefined;
   }
@@ -14,9 +14,9 @@ module.exports = function (pid, signal, callback) {
   pid = parseInt(pid);
   if (Number.isNaN(pid)) {
     if (callback) {
-      return callback(new Error("pid must be a number"));
+      return callback(new Error('pid must be a number'));
     } else {
-      throw new Error("pid must be a number");
+      throw new Error('pid must be a number');
     }
   }
 
@@ -26,16 +26,16 @@ module.exports = function (pid, signal, callback) {
   pidsToProcess[pid] = 1;
 
   switch (process.platform) {
-    case "win32":
-      exec("taskkill /pid " + pid + " /T /F", callback);
+    case 'win32':
+      exec('taskkill /pid ' + pid + ' /T /F', callback);
       break;
-    case "darwin":
+    case 'darwin':
       buildProcessTree(
         pid,
         tree,
         pidsToProcess,
         function (parentPid) {
-          return spawn(pathToPgrep(), ["-P", parentPid]);
+          return spawn(pathToPgrep(), ['-P', parentPid]);
         },
         function () {
           killAll(tree, signal, callback);
@@ -54,11 +54,11 @@ module.exports = function (pid, signal, callback) {
         tree,
         pidsToProcess,
         function (parentPid) {
-          return spawn("ps", [
-            "-o",
-            "pid",
-            "--no-headers",
-            "--ppid",
+          return spawn('ps', [
+            '-o',
+            'pid',
+            '--no-headers',
+            '--ppid',
             parentPid,
           ]);
         },
@@ -101,7 +101,7 @@ function killPid(pid, signal) {
   try {
     process.kill(parseInt(pid, 10), signal);
   } catch (err) {
-    if (err.code !== "ESRCH") throw err;
+    if (err.code !== 'ESRCH') throw err;
   }
 }
 
@@ -113,9 +113,9 @@ function buildProcessTree(
   cb
 ) {
   var ps = spawnChildProcessesList(parentPid);
-  var allData = "";
-  ps.stdout.on("data", function (data) {
-    var data = data.toString("ascii");
+  var allData = '';
+  ps.stdout.on('data', function (data) {
+    var data = data.toString('ascii');
     allData += data;
   });
 
@@ -139,10 +139,10 @@ function buildProcessTree(
     });
   };
 
-  ps.on("close", onClose);
+  ps.on('close', onClose);
 }
 
-var pgrep = "";
+var pgrep = '';
 function pathToPgrep() {
   if (pgrep) {
     return pgrep;
@@ -152,9 +152,9 @@ function pathToPgrep() {
   // unrelated processes.
   // https://github.com/golang/vscode-go/issues/90#issuecomment-634430428
   try {
-    pgrep = existsSync("/usr/bin/pgrep") ? "/usr/bin/pgrep" : "pgrep";
+    pgrep = existsSync('/usr/bin/pgrep') ? '/usr/bin/pgrep' : 'pgrep';
   } catch (e) {
-    pgrep = "pgrep";
+    pgrep = 'pgrep';
   }
   return pgrep;
 }

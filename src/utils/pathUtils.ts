@@ -7,14 +7,14 @@
 /**
  * This file is loaded by both the extension and debug adapter, so it cannot import 'vscode'
  */
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from 'fs';
+import * as path from 'path';
 
 let binPathCache: { [bin: string]: string } = {};
 
 export const envPath =
-  process.env["PATH"] ||
-  (process.platform === "win32" ? process.env["Path"] : null);
+  process.env['PATH'] ||
+  (process.platform === 'win32' ? process.env['Path'] : null);
 
 // find the tool's path from the given PATH env var, or null if the tool is not found.
 export function getBinPathFromEnvVar(
@@ -26,7 +26,7 @@ export function getBinPathFromEnvVar(
   if (envVarValue) {
     const paths = envVarValue.split(path.delimiter);
     for (const p of paths) {
-      const binpath = path.join(p, appendBinToPath ? "bin" : "", toolName);
+      const binpath = path.join(p, appendBinToPath ? 'bin' : '', toolName);
       if (executableFileExists(binpath)) {
         return binpath;
       }
@@ -47,7 +47,7 @@ export function getBinPath(
   const binname = toolName;
   const pathFromGoBin = getBinPathFromEnvVar(
     binname,
-    process.env["GOBIN"],
+    process.env['GOBIN'],
     false
   );
   if (pathFromGoBin) {
@@ -74,14 +74,14 @@ export function getBinPath(
   }
 
   // Check common paths for go
-  if (toolName === "go") {
+  if (toolName === 'go') {
     const defaultPathsForGo =
-      process.platform === "win32"
+      process.platform === 'win32'
         ? [
-            "C:\\Program Files\\Go\\bin\\go.exe",
-            "C:\\Program Files (x86)\\Go\\bin\\go.exe",
+            'C:\\Program Files\\Go\\bin\\go.exe',
+            'C:\\Program Files (x86)\\Go\\bin\\go.exe',
           ]
-        : ["/usr/local/go/bin/go", "/usr/local/bin/go"];
+        : ['/usr/local/go/bin/go', '/usr/local/bin/go'];
     for (const p of defaultPathsForGo) {
       if (executableFileExists(p)) {
         binPathCache[toolName] = p;
@@ -97,12 +97,12 @@ export function getBinPath(
  * Returns the goroot path if it exists, otherwise returns an empty string
  */
 export function getCurrentGoRoot(): string {
-  return process.env["GOROOT"] || "";
+  return process.env['GOROOT'] || '';
 }
 
 export function correctBinname(toolName: string) {
-  if (process.platform === "win32") {
-    return toolName + ".exe";
+  if (process.platform === 'win32') {
+    return toolName + '.exe';
   }
   return toolName;
 }
@@ -122,7 +122,7 @@ export function executableFileExists(filePath: string): boolean {
 
 // Workaround for issue in https://github.com/Microsoft/vscode/issues/9448#issuecomment-244804026
 export function fixDriveCasingInWindows(pathToFix: string): string {
-  return process.platform === "win32" && pathToFix
+  return process.platform === 'win32' && pathToFix
     ? pathToFix.substr(0, 1).toUpperCase() + pathToFix.substr(1)
     : pathToFix;
 }

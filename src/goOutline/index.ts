@@ -3,11 +3,11 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------*/
 
-import { ChildProcess, execFile } from "child_process";
-import * as vscode from "vscode";
+import { ChildProcess, execFile } from 'child_process';
+import * as vscode from 'vscode';
 
-import { getBinPath } from "../utils/pathUtils";
-import { NearestNeighborDict, Node } from "./avlTree";
+import { getBinPath } from '../utils/pathUtils';
+import { NearestNeighborDict, Node } from './avlTree';
 
 // Keep in sync with https://github.com/ramya-rao-a/go-outline
 export interface GoOutlineRange {
@@ -74,12 +74,12 @@ export function runGoOutline(
   token: vscode.CancellationToken
 ): Promise<GoOutlineDeclaration[]> {
   return new Promise<GoOutlineDeclaration[]>((resolve, reject) => {
-    const gooutlineFlags = ["-f", options.fileName];
+    const gooutlineFlags = ['-f', options.fileName];
     if (options.importsOption === GoOutlineImportsOptions.Only) {
-      gooutlineFlags.push("-imports-only");
+      gooutlineFlags.push('-imports-only');
     }
     if (options.document) {
-      gooutlineFlags.push("-modified");
+      gooutlineFlags.push('-modified');
     }
 
     let p: ChildProcess;
@@ -93,13 +93,13 @@ export function runGoOutline(
       gooutlineFlags,
       (err, stdout, stderr) => {
         try {
-          if (stderr && stderr.startsWith("flag provided but not defined: ")) {
+          if (stderr && stderr.startsWith('flag provided but not defined: ')) {
             if (
-              stderr.startsWith("flag provided but not defined: -imports-only")
+              stderr.startsWith('flag provided but not defined: -imports-only')
             ) {
               options.importsOption = GoOutlineImportsOptions.Include;
             }
-            if (stderr.startsWith("flag provided but not defined: -modified")) {
+            if (stderr.startsWith('flag provided but not defined: -modified')) {
               options.document = null;
             }
             p = null;
@@ -125,7 +125,7 @@ export function runGoOutline(
 }
 
 export function getGoOutlineBinPath(): string | undefined {
-  return getBinPath("go-outline");
+  return getBinPath('go-outline');
 }
 
 const goKindToCodeKind: { [key: string]: vscode.SymbolKind } = {
@@ -147,10 +147,10 @@ function convertToCodeSymbols(
 ): vscode.DocumentSymbol[] {
   const symbols: vscode.DocumentSymbol[] = [];
   (decls || []).forEach((decl) => {
-    if (!includeImports && decl.type === "import") {
+    if (!includeImports && decl.type === 'import') {
       return;
     }
-    if (decl.label === "_" && decl.type === "variable") {
+    if (decl.label === '_' && decl.type === 'variable') {
       return;
     }
 
@@ -171,17 +171,17 @@ function convertToCodeSymbols(
             document.lineAt(startPosition.line).range.end
           );
 
-    if (decl.type === "type") {
+    if (decl.type === 'type') {
       const line = document.lineAt(document.positionAt(start));
       const regexStruct = new RegExp(`^\\s*type\\s+${decl.label}\\s+struct\\b`);
       const regexInterface = new RegExp(
         `^\\s*type\\s+${decl.label}\\s+interface\\b`
       );
       decl.type = regexStruct.test(line.text)
-        ? "struct"
+        ? 'struct'
         : regexInterface.test(line.text)
-        ? "interface"
-        : "type";
+        ? 'interface'
+        : 'type';
     }
 
     const symbolInfo = new vscode.DocumentSymbol(
@@ -209,9 +209,9 @@ function getFileArchive(document: vscode.TextDocument): string {
   const fileContents = document.getText();
   return (
     document.fileName +
-    "\n" +
-    Buffer.byteLength(fileContents, "utf8") +
-    "\n" +
+    '\n' +
+    Buffer.byteLength(fileContents, 'utf8') +
+    '\n' +
     fileContents
   );
 }
@@ -234,9 +234,9 @@ function makeMemoizedByteOffsetConverter(
 
     let charDelta: number;
     if (byteDelta > 0) {
-      charDelta = buffer.toString("utf8", nearest.key, byteOffset).length;
+      charDelta = buffer.toString('utf8', nearest.key, byteOffset).length;
     } else {
-      charDelta = -buffer.toString("utf8", byteOffset, nearest.key).length;
+      charDelta = -buffer.toString('utf8', byteOffset, nearest.key).length;
     }
 
     memo.insert(byteOffset, nearest.value + charDelta);

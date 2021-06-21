@@ -1,4 +1,4 @@
-declare module "json-rpc2" {
+declare module 'json-rpc2' {
   export interface RPCConnection {
     call<T>(
       command: string,
@@ -10,6 +10,6 @@ declare module "json-rpc2" {
   export class Client {
     static $create(port: number, addr: string): Client;
     connectSocket(callback: (err: Error, conn: RPCConnection) => void): void;
-    on(handler: "error", callback: (err: Error) => void): void;
+    on(handler: 'error', callback: (err: Error) => void): void;
   }
 }

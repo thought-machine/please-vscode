@@ -1,13 +1,13 @@
-import { execFile } from "child_process";
-import * as fs from "fs";
-import * as path from "path";
-import * as semver from "semver";
-import * as vscode from "vscode";
+import { execFile } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as semver from 'semver';
+import * as vscode from 'vscode';
 
-import { getBinPath } from "./utils/pathUtils";
+import { getBinPath } from './utils/pathUtils';
 
-export const PLZ_TOOL = "plz";
-export const PLZ_CONFIG = ".plzconfig";
+export const PLZ_TOOL = 'plz';
+export const PLZ_CONFIG = '.plzconfig';
 
 export function binPath(): string | undefined {
   return getBinPath(PLZ_TOOL);
@@ -18,8 +18,8 @@ export async function version(): Promise<string> {
   return await new Promise((resolve, reject) => {
     execFile(
       binPath(),
-      ["--version"],
-      { cwd: repoRoot() || path.resolve(".") },
+      ['--version'],
+      { cwd: repoRoot() || path.resolve('.') },
       (err, stdout) => {
         if (err) {
           return reject(err);
@@ -52,7 +52,7 @@ export async function ensureMinimumVersion(
 export async function getInputTargets(
   filename: string
 ): Promise<Array<string>> {
-  const repoPath = repoRoot() || path.resolve(".");
+  const repoPath = repoRoot() || path.resolve('.');
 
   if (filename.startsWith(repoPath)) {
     filename = filename.substring(repoPath.length + 1);
@@ -61,17 +61,17 @@ export async function getInputTargets(
   return await new Promise((resolve, reject) => {
     execFile(
       binPath(),
-      ["query", "whatinputs", filename],
+      ['query', 'whatinputs', filename],
       { cwd: repoPath },
       (err, stdout) => {
         if (err) {
           return reject(err);
         }
 
-        const targets = stdout.split("\n").filter(Boolean);
+        const targets = stdout.split('\n').filter(Boolean);
         if (
           !targets.every(
-            (target) => target.startsWith(":") || target.startsWith("//")
+            (target) => target.startsWith(':') || target.startsWith('//')
           )
         ) {
           return reject(
@@ -102,7 +102,7 @@ export function repoRoot(): string | undefined {
     } catch (e) {}
 
     currentDirectory = path.dirname(currentDirectory);
-  } while (currentDirectory !== "/");
+  } while (currentDirectory !== '/');
 
   return undefined;
 }

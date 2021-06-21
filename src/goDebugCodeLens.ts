@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import { documentSymbols, getGoOutlineBinPath } from "./goOutline";
+import { documentSymbols, getGoOutlineBinPath } from './goOutline';
 
 const TEST_FUNCTION_REGEX = /^Test\P{Ll}.*/u;
 const TEST_METHOD_REGEX = /^\(([^)]+)\)\.(Test\P{Ll}.*)$/u;
@@ -10,13 +10,13 @@ export class GoDebugCodeLensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.CodeLens[]> {
-    if (!document.fileName.endsWith("_test.go")) {
+    if (!document.fileName.endsWith('_test.go')) {
       return [];
     }
 
     if (!getGoOutlineBinPath()) {
       vscode.window.showErrorMessage(
-        "Cannot find Go Outline. Install it from https://github.com/ramya-rao-a/go-outline."
+        'Cannot find Go Outline. Install it from https://github.com/ramya-rao-a/go-outline.'
       );
       return [];
     }
@@ -41,8 +41,8 @@ export class GoDebugCodeLensProvider implements vscode.CodeLensProvider {
     const codeLens: vscode.CodeLens[] = [];
     codeLens.push(
       new vscode.CodeLens(pkg.range, {
-        title: "plz test/debug package",
-        command: "plz-go.debug.package",
+        title: 'plz test/debug package',
+        command: 'plz-go.debug.package',
         arguments: [{ document }],
       })
     );
@@ -55,8 +55,8 @@ export class GoDebugCodeLensProvider implements vscode.CodeLensProvider {
     for (const fn of testFunctions) {
       codeLens.push(
         new vscode.CodeLens(fn.range, {
-          title: "plz run/debug test",
-          command: "plz-go.debug.test",
+          title: 'plz run/debug test',
+          command: 'plz-go.debug.test',
           arguments: [{ document, functionName: extractTestName(fn.name) }],
         })
       );
@@ -74,5 +74,5 @@ function extractTestName(symbolName: string): string {
     return match[2];
   }
 
-  return "";
+  return '';
 }

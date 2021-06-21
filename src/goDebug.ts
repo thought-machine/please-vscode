@@ -1,18 +1,18 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
-import { PLZ_DEBUG_MIN_VERSION } from "./goDebugConfiguration";
-import * as plz from "./please";
+import { PLZ_DEBUG_MIN_VERSION } from './goDebugConfiguration';
+import * as plz from './please';
 
-export async function debug(document: vscode.TextDocument, functionName = "") {
+export async function debug(document: vscode.TextDocument, functionName = '') {
   const debugConfig: vscode.DebugConfiguration = {
-    type: "plz-go",
-    request: "launch",
-    name: "Launch Go test",
+    type: 'plz-go',
+    request: 'launch',
+    name: 'Launch Go test',
   };
 
   try {
     const { fileName } = document;
-    if (!fileName.endsWith("_test.go")) {
+    if (!fileName.endsWith('_test.go')) {
       throw new Error(`Not a test file: ${fileName}`);
     }
 
@@ -26,13 +26,13 @@ export async function debug(document: vscode.TextDocument, functionName = "") {
         `A target couldn't be found where the file is a source: ${fileName}`
       );
     } else if (inputTargets.length === 1) {
-      debugConfig["target"] = inputTargets[0];
+      debugConfig['target'] = inputTargets[0];
     } else {
-      debugConfig["targets"] = inputTargets;
-      debugConfig["target"] = "${command:pickTestTarget}";
+      debugConfig['targets'] = inputTargets;
+      debugConfig['target'] = '${command:pickTestTarget}';
     }
 
-    debugConfig["test"] = functionName;
+    debugConfig['test'] = functionName;
   } catch (e) {
     vscode.window.showErrorMessage(e.message);
     return undefined;

@@ -3,8 +3,8 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------*/
 
-import { ChildProcess } from "child_process";
-import * as kill from "tree-kill";
+import { ChildProcess } from 'child_process';
+import * as kill from 'tree-kill';
 
 // Kill a process and its children, returning a promise.
 export function killProcessTree(

@@ -7,22 +7,22 @@ Kill all processes in the process tree, including the root process.
 Kill all the descendent processes of the process with pid `1`, including the process with pid `1` itself:
 
 ```js
-var kill = require("tree-kill");
+var kill = require('tree-kill');
 kill(1);
 ```
 
 Send a signal other than SIGTERM.:
 
 ```js
-var kill = require("tree-kill");
-kill(1, "SIGKILL");
+var kill = require('tree-kill');
+kill(1, 'SIGKILL');
 ```
 
 Run a callback when done killing the processes. Passes an error argument if there was an error.
 
 ```js
-var kill = require("tree-kill");
-kill(1, "SIGKILL", function (err) {
+var kill = require('tree-kill');
+kill(1, 'SIGKILL', function (err) {
   // Do things
 });
 ```
