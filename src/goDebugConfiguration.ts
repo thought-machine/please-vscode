@@ -20,8 +20,8 @@ export class GoDebugConfigurationProvider implements vscode.DebugConfigurationPr
                     name: 'Launch Go test target',
                     type: this.debugType,
                     request: 'launch',
-                    target: '${command:setTestTarget}',
-                    test: '${command:setTestFunction}',
+                    target: '${command:enterTestTarget}',
+                    test: '${command:enterTestFunction}',
                 }
             }
         ];
