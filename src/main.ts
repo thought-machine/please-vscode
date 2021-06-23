@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 
-import { GoDebugCodeLensProvider } from './goDebugCodeLens';
+import {
+  checkGoDebugCodeLensSupport,
+  GoDebugCodeLensProvider,
+} from './goDebugCodeLens';
 import { GoDebugConfigurationProvider } from './goDebugConfiguration';
 import { startLanguageClient } from './languageClient';
 import * as plz from './please';
@@ -26,44 +29,6 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
   context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      { language: 'go', scheme: 'file' },
-      new GoDebugCodeLensProvider()
-    )
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand('plz-go.debug.package', async (args) => {
-      if (vscode.debug.activeDebugSession) {
-        vscode.window.showErrorMessage(
-          'Debug session has already been initialised'
-        );
-        return undefined;
-      }
-      await debug(args.document);
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand('plz-go.debug.test', async (args) => {
-      if (vscode.debug.activeDebugSession) {
-        vscode.window.showErrorMessage(
-          'Debug session has already been initialised'
-        );
-        return undefined;
-      }
-      await debug(args.document, args.functionName);
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'plz-go.debug.pickTestTarget',
-      async (args): Promise<string> => {
-        return await vscode.window.showQuickPick(args.targets, {
-          placeHolder: 'Select the target associated with this test',
-        });
-      }
-    )
-  );
-  context.subscriptions.push(
     vscode.commands.registerCommand(
       'plz-go.debug.enterTestTarget',
       async (): Promise<string> => {
@@ -83,4 +48,46 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+
+  // Go code lenses
+  if (checkGoDebugCodeLensSupport()) {
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        { language: 'go', scheme: 'file' },
+        new GoDebugCodeLensProvider()
+      )
+    );
+    context.subscriptions.push(
+      vscode.commands.registerCommand('plz-go.debug.package', async (args) => {
+        if (vscode.debug.activeDebugSession) {
+          vscode.window.showErrorMessage(
+            'Debug session has already been initialised'
+          );
+          return undefined;
+        }
+        await debug(args.document);
+      })
+    );
+    context.subscriptions.push(
+      vscode.commands.registerCommand('plz-go.debug.test', async (args) => {
+        if (vscode.debug.activeDebugSession) {
+          vscode.window.showErrorMessage(
+            'Debug session has already been initialised'
+          );
+          return undefined;
+        }
+        await debug(args.document, args.functionName);
+      })
+    );
+    context.subscriptions.push(
+      vscode.commands.registerCommand(
+        'plz-go.debug.pickTestTarget',
+        async (args): Promise<string> => {
+          return await vscode.window.showQuickPick(args.targets, {
+            placeHolder: 'Select the target associated with this test',
+          });
+        }
+      )
+    );
+  }
 }

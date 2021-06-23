@@ -5,19 +5,22 @@ import { documentSymbols, getGoOutlineBinPath } from './goOutline';
 const TEST_FUNCTION_REGEX = /^Test\P{Ll}.*/u;
 const TEST_METHOD_REGEX = /^\(([^)]+)\)\.(Test\P{Ll}.*)$/u;
 
+export function checkGoDebugCodeLensSupport(): boolean {
+  if (!getGoOutlineBinPath()) {
+    vscode.window.showErrorMessage(
+      'Go Outline is required for providing code lenses in Go tests for debugging. Install it from https://github.com/ramya-rao-a/go-outline.'
+    );
+    return false;
+  }
+  return true;
+}
+
 export class GoDebugCodeLensProvider implements vscode.CodeLensProvider {
   public async provideCodeLenses(
     document: vscode.TextDocument,
     token: vscode.CancellationToken
   ): Promise<vscode.CodeLens[]> {
     if (!document.fileName.endsWith('_test.go')) {
-      return [];
-    }
-
-    if (!getGoOutlineBinPath()) {
-      vscode.window.showErrorMessage(
-        'Cannot find Go Outline. Install it from https://github.com/ramya-rao-a/go-outline.'
-      );
       return [];
     }
 
