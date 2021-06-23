@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { LanguageClient } from 'vscode-languageclient/node';
+import { LanguageClient, RevealOutputChannelOn } from 'vscode-languageclient/node';
 
 import * as plz from './please';
 
@@ -31,6 +31,7 @@ export function startLanguageClient(): vscode.Disposable {
       synchronize: {
         fileEvents: vscode.workspace.createFileSystemWatcher('BUILD*'),
       },
+      revealOutputChannelOn: RevealOutputChannelOn.Never,
     }
   );
   return client.start();
