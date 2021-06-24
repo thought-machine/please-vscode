@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
-import { LanguageClient, RevealOutputChannelOn } from 'vscode-languageclient/node';
+import {
+  LanguageClient,
+  RevealOutputChannelOn,
+} from 'vscode-languageclient/node';
 
 import * as plz from './please';
 

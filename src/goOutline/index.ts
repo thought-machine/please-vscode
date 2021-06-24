@@ -6,7 +6,7 @@
 import { ChildProcess, execFile } from 'child_process';
 import * as vscode from 'vscode';
 
-import { getBinPath } from '../utils/pathUtils';
+import { getBinPathUsingConfig } from '../utils';
 import { NearestNeighborDict, Node } from './avlTree';
 
 // Keep in sync with https://github.com/ramya-rao-a/go-outline
@@ -125,7 +125,7 @@ export function runGoOutline(
 }
 
 export function getGoOutlineBinPath(): string | undefined {
-  return getBinPath('go-outline');
+  return getBinPathUsingConfig('go-outline');
 }
 
 const goKindToCodeKind: { [key: string]: vscode.SymbolKind } = {
