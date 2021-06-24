@@ -1,3 +1,4 @@
+import { execFile } from 'child_process';
 import * as vscode from 'vscode';
 
 import {
@@ -8,8 +9,9 @@ import { GoDebugConfigurationProvider } from './goDebugConfiguration';
 import { startLanguageClient } from './languageClient';
 import * as plz from './please';
 import { debug } from './goDebug';
+import { getBinPath } from './utils/pathUtils';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   // Ensure that Please is installed
   if (!plz.binPath()) {
     vscode.window.showErrorMessage(
@@ -20,6 +22,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Start language client
   context.subscriptions.push(startLanguageClient());
+
+  // Load Go env variables
+  await loadGoEnvVariables();
 
   // Setup Go debugging
   context.subscriptions.push(
@@ -49,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
-  // Go code lenses
+  // Setup code lenses in Go tests for debugging
   if (checkGoDebugCodeLensSupport()) {
     context.subscriptions.push(
       vscode.languages.registerCodeLensProvider(
@@ -90,4 +95,45 @@ export function activate(context: vscode.ExtensionContext) {
       )
     );
   }
+}
+
+export async function loadGoEnvVariables(): Promise<void> {
+  const goBinPath = getBinPath('go');
+  if (!goBinPath) {
+    vscode.window.showInformationMessage(
+      'Cannot find Go to load related environment variables.'
+    );
+    return undefined;
+  }
+
+  return new Promise<void>((resolve) => {
+    execFile(
+      goBinPath,
+      // -json is supported since go1.9
+      ['env', '-json', 'GOPATH', 'GOROOT', 'GOBIN'],
+      { env: process.env, cwd: plz.repoRoot() },
+      (err, stdout, stderr) => {
+        if (err) {
+          vscode.window.showErrorMessage(
+            `Failed to run '${goBinPath} env. The config change may not be applied correctly.`
+          );
+          return resolve();
+        }
+        if (stderr) {
+          // 'go env' may output warnings about potential misconfiguration.
+          // Show the messages to users but keep processing the stdout.
+          vscode.window.showWarningMessage(`'${goBinPath} env': ${stderr}`);
+        }
+
+        const envOutput = JSON.parse(stdout);
+        for (const envName in envOutput) {
+          if (!process.env[envName] && envOutput[envName]?.trim()) {
+            process.env[envName] = envOutput[envName].trim();
+          }
+        }
+
+        return resolve();
+      }
+    );
+  });
 }

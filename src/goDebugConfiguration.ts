@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { getBinPath } from './utils/pathUtils';
+import { getBinPathUsingConfig } from './utils';
 import * as plz from './please';
 
 export const PLZ_DEBUG_MIN_VERSION = '16.1.0-beta.4';
@@ -50,7 +50,7 @@ export class GoDebugConfigurationProvider
 
       debugConfiguration['plzBinPath'] = plz.binPath();
 
-      const dlvBinPath = getBinPath('dlv');
+      const dlvBinPath = getBinPathUsingConfig('dlv');
       if (!dlvBinPath) {
         throw new Error(
           'Cannot find Delve debugger. Install it from https://github.com/go-delve/delve.'

@@ -37,10 +37,9 @@ export function getBinPathFromEnvVar(
 
 export function getBinPath(
   toolName: string,
-  useCache = true
+  goPaths?: string[]
 ): string | undefined {
-  // FIXIT: this cache needs to be invalidated when go.goroot or go.alternateTool is changed.
-  if (useCache && binPathCache[toolName]) {
+  if (binPathCache[toolName]) {
     return binPathCache[toolName];
   }
 
@@ -55,10 +54,19 @@ export function getBinPath(
     return pathFromGoBin;
   }
 
+  // Check GOPATH
+  for (const goPath of goPaths || [process.env['GOPATH']]) {
+    const pathFromGoPath = getBinPathFromEnvVar(binname, goPath, true);
+    if (pathFromGoPath) {
+      binPathCache[toolName] = pathFromGoPath;
+      return pathFromGoPath;
+    }
+  }
+
   // Check GOROOT (go, gofmt, godoc would be found here)
   const pathFromGoRoot = getBinPathFromEnvVar(
     binname,
-    getCurrentGoRoot(),
+    process.env['GOROOT'],
     true
   );
   if (pathFromGoRoot) {
@@ -91,13 +99,6 @@ export function getBinPath(
   }
 
   return undefined;
-}
-
-/**
- * Returns the goroot path if it exists, otherwise returns an empty string
- */
-export function getCurrentGoRoot(): string {
-  return process.env['GOROOT'] || '';
 }
 
 export function correctBinname(toolName: string) {

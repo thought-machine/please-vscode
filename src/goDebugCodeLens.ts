@@ -7,7 +7,7 @@ const TEST_METHOD_REGEX = /^\(([^)]+)\)\.(Test\P{Ll}.*)$/u;
 
 export function checkGoDebugCodeLensSupport(): boolean {
   if (!getGoOutlineBinPath()) {
-    vscode.window.showErrorMessage(
+    vscode.window.showWarningMessage(
       'Go Outline is required for providing code lenses in Go tests for debugging. Install it from https://github.com/ramya-rao-a/go-outline.'
     );
     return false;
