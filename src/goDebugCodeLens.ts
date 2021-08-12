@@ -74,7 +74,7 @@ function extractTestName(symbolName: string): string {
     return symbolName;
   } else if (TEST_METHOD_REGEX.test(symbolName)) {
     const match = symbolName.match(TEST_METHOD_REGEX);
-    return match[2];
+    return `/${match[2]}`;
   }
 
   return '';
