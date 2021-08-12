@@ -404,9 +404,9 @@ export class Delve {
         '--share_network',
         target,
         '--',
-        `TESTS=${launchArgs.test ? '/' + launchArgs.test : ''} ${
-          launchArgs.dlvBinPath
-        } ${dlvArgs.join(' ')}`,
+        `TESTS=${launchArgs.test ?? ''} ${launchArgs.dlvBinPath} ${dlvArgs.join(
+          ' '
+        )}`,
       ];
 
       log(`Running: ${launchArgs.plzBinPath} ${plzArgs.join(' ')}`);
