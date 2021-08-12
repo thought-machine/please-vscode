@@ -400,19 +400,19 @@ export class Delve {
         '--config=dbg',
         '--plain_output',
         '--verbosity=info',
-        'run',
-        `--cmd="${launchArgs.dlvBinPath} ${dlvArgs.join(' ')}"`,
+        'exec',
+        '--share_network',
         target,
-        '--in_tmp_dir',
+        '--',
+        `TESTS=${launchArgs.test ? '/' + launchArgs.test : ''} ${
+          launchArgs.dlvBinPath
+        } ${dlvArgs.join(' ')}`,
       ];
 
-      log(`Running: ${launchArgs.plzBinPath} ${dlvArgs.join(' ')}`);
+      log(`Running: ${launchArgs.plzBinPath} ${plzArgs.join(' ')}`);
 
       this.debugProcess = spawn(launchArgs.plzBinPath, plzArgs, {
         cwd: launchArgs.repoRoot,
-        env: Object.assign({}, process.env, {
-          TESTS: launchArgs.test ? '/' + launchArgs.test : '',
-        }),
       });
 
       function connectClient(port: number, host: string) {
