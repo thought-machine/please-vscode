@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { getBinPathUsingConfig } from './utils';
 import * as plz from './please';
 
-export const PLZ_DEBUG_MIN_VERSION = '16.1.0-beta.4';
+export const PLZ_DEBUG_MIN_VERSION = '16.3.0';
 
 export class GoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider
