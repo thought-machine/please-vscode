@@ -23,14 +23,6 @@ Open a Go test file and you should see the **plz test/debug package** code lens 
   - Enter the Go test file target (i.e. **//path/to/test:target**) in the first prompt.
   - (Optional) Enter the test function you are interested in. Press Enter if you want the whole test to run.
 
----
-
-**NOTE**
-
-At the moment, it is advisable to not stop a running debugging session and let it run to completion. Your tests might be allocating resources on the filesystem during setup and they likely need to be dealt with during teardown. We are looking into executing tests in a sandbox environment, so you don't have to worry about it in the future.
-
----
-
 ## Development
 
 ### Extension
