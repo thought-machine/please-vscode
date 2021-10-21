@@ -11,3 +11,7 @@ export function getBinPathUsingConfig(toolName: string): string | undefined {
     goPath ? [goPath, process.env['GOPATH']] : undefined
   );
 }
+
+export function random(low: number, high: number): number {
+  return Math.floor(Math.random() * (high - low) + low);
+}

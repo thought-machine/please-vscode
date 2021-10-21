@@ -2,22 +2,29 @@ import { execFile } from 'child_process';
 import * as vscode from 'vscode';
 
 import {
-  checkGoDebugCodeLensSupport,
-  GoDebugCodeLensProvider,
-} from './goDebugCodeLens';
-import { GoDebugConfigurationProvider } from './goDebugConfiguration';
+  plzCommand,
+  plzDebugDocumentCommand,
+  plzDebugTargetCommand,
+  plzTestDocumentCommand,
+} from './commands';
 import { startLanguageClient } from './languageClient';
+import { LANGUAGE_DEBUG_IDS } from './languages/constants';
+import { GoTestCodeLensProvider } from './languages/go/codeLensProvider';
+import { GoDebugConfigurationProvider } from './languages/go/debugConfigurationProvider';
+import { BuildFileCodeLensProvider } from './languages/plz/codeLensProvider';
+import { PythonDebugAdapterDescriptorProvider } from './languages/python/debugAdapterDescriptorFactory';
+import { PythonTestCodeLensProvider } from './languages/python/codeLensProvider';
+import { PythonDebugConfigurationProvider } from './languages/python/debugConfigurationProvider';
 import * as plz from './please';
-import { debug } from './goDebug';
 import { getBinPath } from './utils/pathUtils';
 
 export async function activate(context: vscode.ExtensionContext) {
   // Ensure that Please is installed
   if (!plz.binPath()) {
     vscode.window.showErrorMessage(
-      'Cannot find Please. Install it from https://github.com/thought-machine/please.'
+      'Cannot find Please. Get it from https://github.com/thought-machine/please.'
     );
-    return undefined;
+    return;
   }
 
   // Start language client
@@ -29,72 +36,63 @@ export async function activate(context: vscode.ExtensionContext) {
   // Setup Go debugging
   context.subscriptions.push(
     vscode.debug.registerDebugConfigurationProvider(
-      'plz-go',
-      new GoDebugConfigurationProvider('plz-go')
+      LANGUAGE_DEBUG_IDS.go,
+      new GoDebugConfigurationProvider()
     )
   );
+  // Setup Go codelenses
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'plz-go.debug.enterTestTarget',
-      async (): Promise<string> => {
-        return await vscode.window.showInputBox({
-          placeHolder: 'Enter test target to debug',
-        });
-      }
-    )
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      'plz-go.debug.enterTestFunction',
-      async (): Promise<string> => {
-        return await vscode.window.showInputBox({
-          placeHolder: 'Enter test function to debug (optional)',
-        });
-      }
+    vscode.languages.registerCodeLensProvider(
+      { language: 'go', scheme: 'file' },
+      new GoTestCodeLensProvider()
     )
   );
 
-  // Setup code lenses in Go tests for debugging
-  if (checkGoDebugCodeLensSupport()) {
-    context.subscriptions.push(
-      vscode.languages.registerCodeLensProvider(
-        { language: 'go', scheme: 'file' },
-        new GoDebugCodeLensProvider()
-      )
-    );
-    context.subscriptions.push(
-      vscode.commands.registerCommand('plz-go.debug.package', async (args) => {
-        if (vscode.debug.activeDebugSession) {
-          vscode.window.showErrorMessage(
-            'Debug session has already been initialised'
-          );
-          return undefined;
-        }
-        await debug(args.document);
-      })
-    );
-    context.subscriptions.push(
-      vscode.commands.registerCommand('plz-go.debug.test', async (args) => {
-        if (vscode.debug.activeDebugSession) {
-          vscode.window.showErrorMessage(
-            'Debug session has already been initialised'
-          );
-          return undefined;
-        }
-        await debug(args.document, args.functionName);
-      })
-    );
-    context.subscriptions.push(
-      vscode.commands.registerCommand(
-        'plz-go.debug.pickTestTarget',
-        async (args): Promise<string> => {
-          return await vscode.window.showQuickPick(args.targets, {
-            placeHolder: 'Select the target associated with this test',
-          });
-        }
-      )
-    );
-  }
+  // Setup Python debugging
+  context.subscriptions.push(
+    vscode.debug.registerDebugConfigurationProvider(
+      LANGUAGE_DEBUG_IDS.python,
+      new PythonDebugConfigurationProvider()
+    )
+  );
+  context.subscriptions.push(
+    vscode.debug.registerDebugAdapterDescriptorFactory(
+      LANGUAGE_DEBUG_IDS.python,
+      new PythonDebugAdapterDescriptorProvider()
+    )
+  );
+  // Setup Python codelenses
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { language: 'python', scheme: 'file' },
+      new PythonTestCodeLensProvider()
+    )
+  );
+
+  // Setup plz-related commands
+  context.subscriptions.push(
+    vscode.commands.registerCommand('plz.test.document', plzTestDocumentCommand)
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'plz.debug.document',
+      plzDebugDocumentCommand
+    )
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('plz.debug.target', plzDebugTargetCommand)
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand('plz', plzCommand)
+  );
+
+  // Set up BUILD file codelenses
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { language: 'plz', scheme: 'file' },
+      new BuildFileCodeLensProvider()
+    )
+  );
 }
 
 export async function loadGoEnvVariables(): Promise<void> {
@@ -103,7 +101,7 @@ export async function loadGoEnvVariables(): Promise<void> {
     vscode.window.showInformationMessage(
       'Cannot find Go to load related environment variables.'
     );
-    return undefined;
+    return;
   }
 
   return new Promise<void>((resolve) => {

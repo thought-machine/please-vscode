@@ -2,10 +2,9 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es6",
-    "outDir": "out",
+    "outDir": "out/src",
     "rootDir": "src",
     "sourceMap": true
   },
-  "include": ["src", "typings"],
-  "exclude": ["node_modules", ".vscode-test"]
+  "include": ["src", "typings"]
 }

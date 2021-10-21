@@ -37,5 +37,6 @@ export function startLanguageClient(): vscode.Disposable {
       revealOutputChannelOn: RevealOutputChannelOn.Never,
     }
   );
+
   return client.start();
 }

@@ -6,7 +6,6 @@
 import { ChildProcess, execFile } from 'child_process';
 import * as vscode from 'vscode';
 
-import { getBinPathUsingConfig } from '../utils';
 import { NearestNeighborDict, Node } from './avlTree';
 
 // Keep in sync with https://github.com/ramya-rao-a/go-outline
@@ -52,6 +51,7 @@ export interface GoOutlineOptions {
 }
 
 export async function documentSymbols(
+  goOutlinePath: string,
   document: vscode.TextDocument,
   token: vscode.CancellationToken
 ): Promise<vscode.DocumentSymbol[]> {
@@ -60,7 +60,7 @@ export async function documentSymbols(
     document,
     importsOption: GoOutlineImportsOptions.Exclude,
   };
-  const decls = await runGoOutline(options, token);
+  const decls = await runGoOutline(goOutlinePath, options, token);
   return convertToCodeSymbols(
     options.document,
     decls,
@@ -70,6 +70,7 @@ export async function documentSymbols(
 }
 
 export function runGoOutline(
+  goOutlinePath: string,
   options: GoOutlineOptions,
   token: vscode.CancellationToken
 ): Promise<GoOutlineDeclaration[]> {
@@ -88,44 +89,36 @@ export function runGoOutline(
     }
 
     // Spawn `go-outline` process
-    p = execFile(
-      getGoOutlineBinPath(),
-      gooutlineFlags,
-      (err, stdout, stderr) => {
-        try {
-          if (stderr && stderr.startsWith('flag provided but not defined: ')) {
-            if (
-              stderr.startsWith('flag provided but not defined: -imports-only')
-            ) {
-              options.importsOption = GoOutlineImportsOptions.Include;
-            }
-            if (stderr.startsWith('flag provided but not defined: -modified')) {
-              options.document = null;
-            }
-            p = null;
-            return runGoOutline(options, token).then((results) => {
-              return resolve(results);
-            });
+    p = execFile(goOutlinePath, gooutlineFlags, (err, stdout, stderr) => {
+      try {
+        if (stderr && stderr.startsWith('flag provided but not defined: ')) {
+          if (
+            stderr.startsWith('flag provided but not defined: -imports-only')
+          ) {
+            options.importsOption = GoOutlineImportsOptions.Include;
           }
-          if (err) {
-            return resolve(null);
+          if (stderr.startsWith('flag provided but not defined: -modified')) {
+            options.document = null;
           }
-          const result = stdout.toString();
-          const decls = <GoOutlineDeclaration[]>JSON.parse(result);
-          return resolve(decls);
-        } catch (e) {
-          reject(e);
+          p = null;
+          return runGoOutline(goOutlinePath, options, token).then((results) => {
+            return resolve(results);
+          });
         }
+        if (err) {
+          return resolve(null);
+        }
+        const result = stdout.toString();
+        const decls = <GoOutlineDeclaration[]>JSON.parse(result);
+        return resolve(decls);
+      } catch (e) {
+        reject(e);
       }
-    );
+    });
     if (options.document && p.pid) {
       p.stdin.end(getFileArchive(options.document));
     }
   });
-}
-
-export function getGoOutlineBinPath(): string | undefined {
-  return getBinPathUsingConfig('go-outline');
 }
 
 const goKindToCodeKind: { [key: string]: vscode.SymbolKind } = {
