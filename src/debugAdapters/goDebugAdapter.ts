@@ -395,6 +395,7 @@ export class Delve {
         '--headless=true',
         `--listen=${launchArgs.host}:${launchArgs.port}`,
         '--api-version=2',
+        '--check-go-version=false',
       ];
       const plzArgs: Array<string> = [
         '--config=dbg',
