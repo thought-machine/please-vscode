@@ -1,35 +1,15 @@
 # VSCode extension for Please
 
-This is a VSCode extension for the Please build system.
-Currently it is in a very rudimentary state.
+This is the VSCode extension for the Please build system.
 
 See https://please.build or https://github.com/thought-machine/please for more information about Please itself.
 
-## Debugging (Beta)
+## Debugging
 
-### Go language
+### Go language requirements
 
-> [Delve](https://github.com/go-delve/delve) and [Go Outline](https://github.com/ramya-rao-a/go-outline) are required to be installed as a prerequisite.
-
-#### Option 1
-
-Open a Go test file and you should see the **plz test/debug package** code lens at the top of the file and **plz run/debug test** codelenses for every test.
-
-#### Option 2
-
-- Open **Run > Add Configuration...** and select **Please: Launch Go test target**.
-- Navigate to Go test file that you want to debug and place your breakpoints.
-- Select **Run > Start Debugging** from the main menu:
-  - Enter the Go test file target (i.e. **//path/to/test:target**) in the first prompt.
-  - (Optional) Enter the test function you are interested in. Press Enter if you want the whole test to run.
-
----
-
-**NOTE**
-
-At the moment, it is advisable to not stop a running debugging session and let it run to completion. Your tests might be allocating resources on the filesystem during setup and they likely need to be dealt with during teardown. We are looking into executing tests in a sandbox environment, so you don't have to worry about it in the future.
-
----
+- [Delve](https://github.com/go-delve/delve).
+- [Go Outline](https://github.com/ramya-rao-a/go-outline).
 
 ## Development
 

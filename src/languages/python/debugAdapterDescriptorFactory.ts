@@ -21,7 +21,7 @@ export class PythonDebugAdapterDescriptorProvider
       this.server = spawn(
         '/home/ttristao/code/please/plz-out/please/plz', // TODO: plz.binPath()
         [
-          '--noupdate',
+          '--noupdate', // TODO: Remove
           '--plain_output',
           '--verbosity=info',
           'debug',
@@ -37,7 +37,12 @@ export class PythonDebugAdapterDescriptorProvider
         }
       );
 
-      plz.outputChannel.show();
+      // Not only we want the `true` argument to prevent the channel from gaining focus,
+      // but also it sorts out an issue with `setTimeout` (in `onServerListening`) that
+      // isn't guaranteed to always execute its callback. My educated guess would be
+      // that changing focus between different UI windows migth be causing this issue.
+      plz.outputChannel.show(true);
+
       this.server.stderr.on('data', (data) =>
         plz.outputChannel.appendLine(data)
       );
@@ -65,7 +70,7 @@ export class PythonDebugAdapterDescriptorProvider
 // The implementation is a bit hacky but Node.js doesn't provide better
 // primitives for the job.
 // There's some likelihood that we attempt to listen on the port just before
-// the other process tries to do it as well.
+// the other process tries to do it as well causing it to fail.
 function onServerListening(port: number, callback: () => void): void {
   const server = net.createServer();
 

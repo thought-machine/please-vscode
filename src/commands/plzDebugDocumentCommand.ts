@@ -11,6 +11,10 @@ export async function plzDebugDocumentCommand(args: {
   language: Language;
 }): Promise<void> {
   try {
+    if (vscode.debug.activeDebugSession) {
+      throw new Error('Debug session has already been initialised');
+    }
+
     const {
       document: { fileName },
       functionName,

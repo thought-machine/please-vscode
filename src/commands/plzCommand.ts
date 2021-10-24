@@ -1,6 +1,6 @@
-import * as vscode from 'vscode';
-
 import * as plz from '../please';
+
+import { argumentPrompt } from './utils';
 
 export async function plzCommand(args: {
   command: string;
@@ -11,9 +11,9 @@ export async function plzCommand(args: {
 
   let runtimeArgs: string | undefined;
   if (runtime) {
-    runtimeArgs = await vscode.window.showInputBox({
-      placeHolder: 'Enter arguments or leave blank',
-    });
+    runtimeArgs = await argumentPrompt(
+      `key-plz-${command}-${commandArgs.join('-')}`
+    );
     // Terminate if `Escape` key was pressed.
     if (runtimeArgs === undefined) {
       return;

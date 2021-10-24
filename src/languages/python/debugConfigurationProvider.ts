@@ -35,11 +35,11 @@ export class PythonDebugConfigurationProvider
       debugConfiguration.pathMappings = [
         // TODO: We need to be able to toggle between the configurations based on whether the build/test is sandboxed or not.
         //{
-          //localRoot: repoRoot,
-          //remoteRoot: path.join(
-            //plz.SANDBOX_DIRECTORY,
-            //'.cache/pex/pex-debug' // This is the directory that please_pex uses for extracting the pex.
-          //),
+        //localRoot: repoRoot,
+        //remoteRoot: path.join(
+        //plz.SANDBOX_DIRECTORY,
+        //'.cache/pex/pex-debug' // This is the directory that please_pex uses for extracting the pex.
+        //),
         //},
         {
           localRoot: repoRoot,

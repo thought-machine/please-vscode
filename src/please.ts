@@ -144,7 +144,7 @@ export function repoRoot(): string | undefined {
       if (status.isFile()) {
         return currentDirectory;
       }
-    } catch (e) { }
+    } catch (e) {}
 
     currentDirectory = path.dirname(currentDirectory);
   } while (currentDirectory !== '/');

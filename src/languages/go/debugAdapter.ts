@@ -380,7 +380,7 @@ export class Delve {
       }
 
       const plzArgs: Array<string> = [
-        '--noupdate',
+        '--noupdate', // TODO: Remove
         '--plain_output',
         '--verbosity=info',
         'debug',

@@ -23,3 +23,20 @@ export async function retrieveInputFileTarget(
       });
   }
 }
+
+const argumentPromptStore: { [key: string]: string } = {};
+
+export async function argumentPrompt(
+  key?: string
+): Promise<string | undefined> {
+  const input = await vscode.window.showInputBox({
+    placeHolder: 'Enter arguments or leave blank',
+    value: argumentPromptStore[key] ?? '',
+  });
+
+  if (key) {
+    argumentPromptStore[key] = input;
+  }
+
+  return input;
+}
