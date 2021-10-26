@@ -31,9 +31,18 @@ export class PythonDebugConfigurationProvider
         `The minimum Please version for Python debugging is ${PLZ_PYTHON_DEBUG_MIN_VERSION}`
       );
 
+      const pexExtractionLocation = path.join(
+        repoRoot,
+        'plz-out/debug', // Top level directory that Please uses for preparing targets for debugging.
+        plz.labelPackage(debugConfiguration.target),
+        '.cache/pex/pex-debug' // This is the directory that please_pex uses for extracting the pex.
+      );
       // This is a `debugpy` configuration setting to get path mappings right.
       debugConfiguration.pathMappings = [
-        // TODO: We need to be able to toggle between the configurations based on whether the build/test is sandboxed or not.
+        // TODO: We need to be able to toggle between the configurations based on:
+        // 1) Whether sandboxing is enabled or not.
+        // 2) Location of toolchain used to be able load its sources if required during debugging.
+
         //{
         //localRoot: repoRoot,
         //remoteRoot: path.join(
@@ -41,14 +50,16 @@ export class PythonDebugConfigurationProvider
         //'.cache/pex/pex-debug' // This is the directory that please_pex uses for extracting the pex.
         //),
         //},
+
+        // We don't want the default substitute path, set below, to mess with this path.
+        {
+          localRoot: path.join(pexExtractionLocation, '.bootstrap'),
+          remoteRoot: path.join(pexExtractionLocation, '.bootstrap'),
+        },
+        // Default substitute path.
         {
           localRoot: repoRoot,
-          remoteRoot: path.join(
-            repoRoot,
-            'plz-out/debug', // Top level directory that Please uses for preparing targets for debugging.
-            plz.labelPackage(debugConfiguration.target),
-            '.cache/pex/pex-debug' // This is the directory that please_pex uses for extracting the pex.
-          ),
+          remoteRoot: pexExtractionLocation,
         },
       ];
     } catch (e) {

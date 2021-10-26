@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as plz from '../../please';
@@ -29,10 +30,32 @@ export class GoDebugConfigurationProvider
       );
 
       // This is a `delve` configuration setting to get path mappings right.
-      debugConfiguration.substitutePath = [{ from: repoRoot + '/', to: '' }];
+      debugConfiguration.substitutePath = [
+        // TODO: We need to be able to toggle between the configurations based on:
+        // 1) Whether sandboxing is enabled or not.
+        // 2) Location of toolchain used to be able load its sources if required during debugging.
+        // We don't want the default substitute path, set below, to mess with this path.
+
+        // TODO: This works when the toolchain used is defined in third_party is used
+        {
+          from: path.join(repoRoot, 'plz-out/bin/third_party'),
+          to: path.join(repoRoot, 'plz-out/bin/third_party'),
+        },
+        {
+          from: path.join(
+            repoRoot,
+            'plz-out/debug', // Top level directory that Please uses for preparing targets for debugging.
+            plz.labelPackage(debugConfiguration.target),
+            'third_party'
+          ),
+          to: 'third_party',
+        },
+        // Default substitute path.
+        { from: repoRoot + '/', to: '' },
+      ];
 
       debugConfiguration.plzBinPath =
-        '/home/ttristao/code/please/plz-out/please/plz';
+        '/home/ttristao/code/please/plz-out/please/plz'; // TODO: plz.binPath()
       debugConfiguration.repoRoot = repoRoot;
     } catch (e) {
       vscode.window.showErrorMessage(e.message);
