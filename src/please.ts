@@ -74,13 +74,10 @@ export function ensureMinimumVersion(
   minVersion: string,
   explanation: string
 ): void {
-  try {
-    const currentVersion = version();
-    if (semver.lt(currentVersion, minVersion)) {
-      throw new Error(explanation);
-    }
-  } catch (e) {
-    throw e;
+  const currentVersion = version();
+
+  if (semver.lt(currentVersion, minVersion)) {
+    throw new Error(explanation);
   }
 }
 

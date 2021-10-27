@@ -2193,7 +2193,7 @@ export class GoDebugSession extends LoggingDebugSession {
   }
 }
 
-export function random(low: number, high: number): number {
+function random(low: number, high: number): number {
   return Math.floor(Math.random() * (high - low) + low);
 }
 
