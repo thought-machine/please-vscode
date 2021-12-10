@@ -36,7 +36,7 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
       if (!this.python3NotFoundMessageShown) {
         this.python3NotFoundMessageShown = true;
         vscode.window.showWarningMessage(
-          'Could not find python3 required for adding code lenses to BUILD files.'
+          'Cannot find python3 required for adding code lenses to BUILD files.'
         );
       }
       return;

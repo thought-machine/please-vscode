@@ -1,12 +1,10 @@
-import { spawnSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as plz from '../../please';
 import { workspacePath } from '../../utils';
 import { getBinPathFromEnvVar } from '../../utils/pathUtils';
-
-export const PLZ_GO_DEBUG_MIN_VERSION = '16.1.0-beta.4'; // TODO: Initial version of plz debug
 
 export class GoDebugConfigurationProvider
   implements vscode.DebugConfigurationProvider
@@ -67,7 +65,7 @@ export class GoDebugConfigurationProvider
 export function goToolchainPath(): string {
   let goTool = plz.runCommand(['query', 'config', 'go.gotool']);
 
-  // TODO: Utility for this?
+  // Check whether it is a target.
   if (goTool.startsWith(':') || goTool.startsWith('//')) {
     // Deals with annotated labels.
     if (goTool.includes('|')) {
@@ -86,14 +84,13 @@ export function goToolchainPath(): string {
       const goToolPath = getBinPathFromEnvVar(goTool, buildPathPart, false);
 
       if (goToolPath) {
-        const proc = spawnSync(goToolPath, ['env', 'GOROOT'], {
-          // TODO
+        const output = execFileSync(goToolPath, ['env', 'GOROOT'], {
+          // This is required since we load `GOROOT` onto `process.env` at the start
+          // of the extension activation.
           env: { ...process.env, GOROOT: '' },
         });
 
-        // TODO error handling
-
-        return proc.stdout.toString().trim();
+        return output.toString().trim();
       }
     }
   }

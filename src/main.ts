@@ -38,9 +38,14 @@ export async function activate(context: vscode.ExtensionContext) {
   // Setup Go debugging
   try {
     plz.ensureMinVersion(
-      '16.1.0-beta.4',
-      `The minimum Please version for Go debugging is 16.1.0-beta.4`
+      '16.7.0',
+      `This plugin version requires at least Please 16.7.0 for Go debugging.`
     );
+
+    const goBinPath = getBinPath('go');
+    if (!goBinPath) {
+      throw new Error('Cannot find Go required for debugging support.');
+    }
 
     context.subscriptions.push(
       vscode.debug.registerDebugConfigurationProvider(
@@ -118,30 +123,21 @@ export async function activate(context: vscode.ExtensionContext) {
 // Loads Go-related environment variables onto `process.env`.
 export function loadGoEnv(): void {
   try {
-    const goBinPath = getBinPath('go');
-    if (!goBinPath) {
-      throw new Error('Cannot find Go to load related environment variables.');
-    }
+    const output = execFileSync(
+      getBinPath('go'),
+      ['env', '-json', 'GOPATH', 'GOROOT', 'GOBIN'],
+      { encoding: 'utf-8' }
+    );
 
-    try {
-      const output = execFileSync(
-        goBinPath,
-        ['env', '-json', 'GOPATH', 'GOROOT', 'GOBIN'],
-        { encoding: 'utf-8' }
-      );
-
-      const envOutput = JSON.parse(output.toString());
-      for (const envName in envOutput) {
-        if (!process.env[envName] && envOutput[envName]?.trim()) {
-          process.env[envName] = envOutput[envName].trim();
-        }
+    const envOutput = JSON.parse(output.toString());
+    for (const envName in envOutput) {
+      if (!process.env[envName] && envOutput[envName]?.trim()) {
+        process.env[envName] = envOutput[envName].trim();
       }
-    } catch (e) {
-      throw new Error(
-        `Failed to run Go to load related environment variables:\n${e.message}`
-      );
     }
   } catch (e) {
-    vscode.window.showWarningMessage(e.message);
+    throw new Error(
+      `Failed to run Go to load related environment variables:\n${e.message}`
+    );
   }
 }
