@@ -252,6 +252,7 @@ interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
   stopOnEntry?: boolean;
   repoRoot: string;
   plzBinPath: string;
+  plzBinArgs: string[];
   host: string;
   port: number;
   substitutePath?: { from: string; to: string }[];
@@ -375,12 +376,12 @@ export class Delve {
 
       if (!existsSync(launchArgs.plzBinPath)) {
         return reject(
-          'Cannot find Please. Install from https://github.com/thought-machine/please and ensure it is in the "PATH" environment variable.'
+          'Cannot find Please. Get it from https://github.com/thought-machine/please.'
         );
       }
 
       const plzArgs: Array<string> = [
-        '--noupdate', // TODO: Remove
+        ...launchArgs.plzBinArgs,
         '--plain_output',
         '--verbosity=info',
         'debug',

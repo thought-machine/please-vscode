@@ -1,4 +1,4 @@
-import { execFile } from 'child_process';
+import { execFileSync } from 'child_process';
 import * as vscode from 'vscode';
 
 import {
@@ -18,6 +18,8 @@ import { PythonDebugConfigurationProvider } from './languages/python/debugConfig
 import * as plz from './please';
 import { getBinPath } from './utils/pathUtils';
 
+// This gets activated only if the workspace contains a `.plzconfig` file.
+// Check the `activationEvents` field in the `package.json` file.
 export async function activate(context: vscode.ExtensionContext) {
   // Ensure that Please is installed
   if (!plz.binPath()) {
@@ -31,43 +33,61 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(startLanguageClient());
 
   // Load Go env variables
-  await loadGoEnvVariables();
+  loadGoEnv();
 
   // Setup Go debugging
-  context.subscriptions.push(
-    vscode.debug.registerDebugConfigurationProvider(
-      LANGUAGE_DEBUG_IDS.go,
-      new GoDebugConfigurationProvider()
-    )
-  );
-  // Setup Go codelenses
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      { language: 'go', scheme: 'file' },
-      new GoTestCodeLensProvider()
-    )
-  );
+  try {
+    plz.ensureMinVersion(
+      '16.1.0-beta.4',
+      `The minimum Please version for Go debugging is 16.1.0-beta.4`
+    );
+
+    context.subscriptions.push(
+      vscode.debug.registerDebugConfigurationProvider(
+        LANGUAGE_DEBUG_IDS.go,
+        new GoDebugConfigurationProvider()
+      )
+    );
+    // Setup Go codelenses
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        { language: 'go', scheme: 'file' },
+        new GoTestCodeLensProvider()
+      )
+    );
+  } catch (e) {
+    vscode.window.showWarningMessage(e.message);
+  }
 
   // Setup Python debugging
-  context.subscriptions.push(
-    vscode.debug.registerDebugConfigurationProvider(
-      LANGUAGE_DEBUG_IDS.python,
-      new PythonDebugConfigurationProvider()
-    )
-  );
-  context.subscriptions.push(
-    vscode.debug.registerDebugAdapterDescriptorFactory(
-      LANGUAGE_DEBUG_IDS.python,
-      new PythonDebugAdapterDescriptorProvider()
-    )
-  );
-  // Setup Python codelenses
-  context.subscriptions.push(
-    vscode.languages.registerCodeLensProvider(
-      { language: 'python', scheme: 'file' },
-      new PythonTestCodeLensProvider()
-    )
-  );
+  try {
+    plz.ensureMinVersion(
+      '16.7.0',
+      `The minimum Please version for Python debugging is 16.7.0`
+    );
+
+    context.subscriptions.push(
+      vscode.debug.registerDebugConfigurationProvider(
+        LANGUAGE_DEBUG_IDS.python,
+        new PythonDebugConfigurationProvider()
+      )
+    );
+    context.subscriptions.push(
+      vscode.debug.registerDebugAdapterDescriptorFactory(
+        LANGUAGE_DEBUG_IDS.python,
+        new PythonDebugAdapterDescriptorProvider()
+      )
+    );
+    // Setup Python codelenses
+    context.subscriptions.push(
+      vscode.languages.registerCodeLensProvider(
+        { language: 'python', scheme: 'file' },
+        new PythonTestCodeLensProvider()
+      )
+    );
+  } catch (e) {
+    vscode.window.showWarningMessage(e.message);
+  }
 
   // Setup plz-related commands
   context.subscriptions.push(
@@ -95,43 +115,33 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export async function loadGoEnvVariables(): Promise<void> {
-  const goBinPath = getBinPath('go');
-  if (!goBinPath) {
-    vscode.window.showInformationMessage(
-      'Cannot find Go to load related environment variables.'
-    );
-    return;
-  }
+// Loads Go-related environment variables onto `process.env`.
+export function loadGoEnv(): void {
+  try {
+    const goBinPath = getBinPath('go');
+    if (!goBinPath) {
+      throw new Error('Cannot find Go to load related environment variables.');
+    }
 
-  return new Promise<void>((resolve) => {
-    execFile(
-      goBinPath,
-      // -json is supported since go1.9
-      ['env', '-json', 'GOPATH', 'GOROOT', 'GOBIN'],
-      { env: process.env, cwd: plz.repoRoot() },
-      (err, stdout, stderr) => {
-        if (err) {
-          vscode.window.showErrorMessage(
-            `Failed to run '${goBinPath} env. The config change may not be applied correctly.`
-          );
-          return resolve();
-        }
-        if (stderr) {
-          // 'go env' may output warnings about potential misconfiguration.
-          // Show the messages to users but keep processing the stdout.
-          vscode.window.showWarningMessage(`'${goBinPath} env': ${stderr}`);
-        }
+    try {
+      const output = execFileSync(
+        goBinPath,
+        ['env', '-json', 'GOPATH', 'GOROOT', 'GOBIN'],
+        { encoding: 'utf-8' }
+      );
 
-        const envOutput = JSON.parse(stdout);
-        for (const envName in envOutput) {
-          if (!process.env[envName] && envOutput[envName]?.trim()) {
-            process.env[envName] = envOutput[envName].trim();
-          }
+      const envOutput = JSON.parse(output.toString());
+      for (const envName in envOutput) {
+        if (!process.env[envName] && envOutput[envName]?.trim()) {
+          process.env[envName] = envOutput[envName].trim();
         }
-
-        return resolve();
       }
-    );
-  });
+    } catch (e) {
+      throw new Error(
+        `Failed to run Go to load related environment variables:\n${e.message}`
+      );
+    }
+  } catch (e) {
+    vscode.window.showWarningMessage(e.message);
+  }
 }

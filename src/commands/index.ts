@@ -1,4 +1,4 @@
-export { plzCommand } from './plzCommand';
-export { plzDebugDocumentCommand } from './plzDebugDocumentCommand';
-export { plzDebugTargetCommand } from './plzDebugTargetCommand';
-export { plzTestDocumentCommand } from './plzTestDocumentCommand';
+export * from './plzCommand';
+export * from './plzDebugDocumentCommand';
+export * from './plzDebugTargetCommand';
+export * from './plzTestDocumentCommand';

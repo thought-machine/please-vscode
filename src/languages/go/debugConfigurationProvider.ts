@@ -1,7 +1,10 @@
+import { spawnSync } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
 import * as plz from '../../please';
+import { workspacePath } from '../../utils';
+import { getBinPathFromEnvVar } from '../../utils/pathUtils';
 
 export const PLZ_GO_DEBUG_MIN_VERSION = '16.1.0-beta.4'; // TODO: Initial version of plz debug
 
@@ -19,43 +22,34 @@ export class GoDebugConfigurationProvider
     }
 
     try {
-      const repoRoot = plz.repoRoot();
-      if (!repoRoot) {
-        throw new Error('You need to be inside a Please repo for debugging.');
-      }
-
-      plz.ensureMinimumVersion(
-        PLZ_GO_DEBUG_MIN_VERSION,
-        `The minimum Please version for Go debugging is ${PLZ_GO_DEBUG_MIN_VERSION}`
-      );
+      const repoRoot = workspacePath();
+      const toolchainPath = goToolchainPath();
 
       // This is a `delve` configuration setting to get path mappings right.
       debugConfiguration.substitutePath = [
-        // TODO: We need to be able to toggle between the configurations based on:
-        // 1) Whether sandboxing is enabled or not.
-        // 2) Location of toolchain used to be able load its sources if required during debugging.
-        // We don't want the default substitute path, set below, to mess with this path.
-
-        // TODO: This works when the toolchain used is defined in third_party is used
+        // Toolchain
         {
-          from: path.join(repoRoot, 'plz-out/bin/third_party'),
-          to: path.join(repoRoot, 'plz-out/bin/third_party'),
+          from: toolchainPath,
+          to: toolchainPath,
         },
+        // Third party
         {
           from: path.join(
             repoRoot,
-            'plz-out/debug', // Top level directory that Please uses for preparing targets for debugging.
+            plz.DEBUG_OUT_DIRECTORY,
             plz.labelPackage(debugConfiguration.target),
             'third_party'
           ),
           to: 'third_party',
         },
-        // Default substitute path.
+        // Sources
         { from: repoRoot + '/', to: '' },
       ];
 
-      debugConfiguration.plzBinPath =
-        '/home/ttristao/code/please/plz-out/please/plz'; // TODO: plz.binPath()
+      const plzCmd = plz.cmd();
+      debugConfiguration.plzBinPath = plzCmd.bin;
+      debugConfiguration.plzBinArgs = plzCmd.args;
+
       debugConfiguration.repoRoot = repoRoot;
     } catch (e) {
       vscode.window.showErrorMessage(e.message);
@@ -68,4 +62,41 @@ export class GoDebugConfigurationProvider
 
     return debugConfiguration;
   }
+}
+
+export function goToolchainPath(): string {
+  let goTool = plz.runCommand(['query', 'config', 'go.gotool']);
+
+  // TODO: Utility for this?
+  if (goTool.startsWith(':') || goTool.startsWith('//')) {
+    // Deals with annotated labels.
+    if (goTool.includes('|')) {
+      goTool = goTool.substring(0, goTool.indexOf('|'));
+    }
+
+    const goToolPath = plz.runCommand(['query', 'output', goTool]);
+
+    return path.join(workspacePath(), goToolPath);
+  }
+
+  const buildPaths = plz.runCommand(['query', 'config', 'build.path']);
+
+  for (const buildPath of buildPaths.split('\n')) {
+    for (const buildPathPart of buildPath.split(':')) {
+      const goToolPath = getBinPathFromEnvVar(goTool, buildPathPart, false);
+
+      if (goToolPath) {
+        const proc = spawnSync(goToolPath, ['env', 'GOROOT'], {
+          // TODO
+          env: { ...process.env, GOROOT: '' },
+        });
+
+        // TODO error handling
+
+        return proc.stdout.toString().trim();
+      }
+    }
+  }
+
+  throw new Error('Unable to find the Go toolchain for this project.');
 }

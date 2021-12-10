@@ -23,8 +23,7 @@
     "vscode": "^1.52.0"
   },
   "activationEvents": [
-    "workspaceContains:.plzconfig",
-    "onLanguage:plz"
+    "workspaceContains:.plzconfig"
   ],
   "main": "./out/src/main",
   "contributes": {
@@ -60,15 +59,6 @@
           ".build"
         ],
         "configuration": "./syntax/language-configuration.json"
-      },
-      {
-        "id": "go",
-        "extensions": [
-          ".go"
-        ],
-        "aliases": [
-          "Go"
-        ]
       }
     ],
     "grammars": [

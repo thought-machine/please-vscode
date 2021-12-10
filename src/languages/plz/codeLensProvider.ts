@@ -62,11 +62,11 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
     for (const call of ruleCalls) {
       const { id: ruleName, name: ruleLabel, line } = call;
       const target = plz.buildLabel(document.fileName, ruleLabel);
-      // The range here is reduced to the line and length of the function call name
-      // which seems to do the job at placing in the code lenses in the right place.
+
+      // Get line range.
       const range = new vscode.Range(
         new vscode.Position(line - 1, 0),
-        new vscode.Position(line - 1, ruleName.length)
+        new vscode.Position(line - 1, 0)
       );
 
       // Not all rules (i.e. filegroups) are buildable and since we don't have enough

@@ -13,7 +13,8 @@
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "sourceMaps": true,
       "smartStep": true,
-      "preLaunchTask": "npm: compile"
+      "preLaunchTask": "npm: compile",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Launch Go Debug Adapter as server",
@@ -25,7 +26,8 @@
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "sourceMaps": true,
       "smartStep": true,
-      "preLaunchTask": "npm: compile"
+      "preLaunchTask": "npm: compile",
+      "envFile": "${workspaceFolder}/.env"
     }
   ],
   "compounds": [

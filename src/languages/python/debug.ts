@@ -12,6 +12,7 @@ export async function debug(
     name: 'Please Python',
     target,
     runtimeArgs,
+    justMyCode: false,
   };
 
   return await vscode.debug.startDebugging(undefined, debugConfig);
