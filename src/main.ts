@@ -39,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
   try {
     plz.ensureMinVersion(
       '16.17.0',
-      `This plugin version requires at least Please 16.17.0 for Go debugging.`
+      'This plugin version requires at least Please 16.17.0 for Go debugging.'
     );
 
     const goBinPath = getBinPath('go');
@@ -68,7 +68,7 @@ export async function activate(context: vscode.ExtensionContext) {
   try {
     plz.ensureMinVersion(
       '16.17.0',
-      `The minimum Please version for Python debugging is 16.17.0`
+      'The minimum Please version for Python debugging is 16.17.0'
     );
 
     context.subscriptions.push(
