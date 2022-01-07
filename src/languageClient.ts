@@ -16,17 +16,20 @@ export function startLanguageClient(): vscode.Disposable {
     ],
   });
 
+  const serverRunCmd = plz.cmd(['tool', 'langserver']);
+  const serverDebugCmd = plz.cmd(['tool', 'langserver', '-v', '4']);
+
   const client = new LanguageClient(
     'plz',
     'Please Language Server',
     {
       run: {
-        command: plz.binPath(),
-        args: ['tool', 'langserver'],
+        command: serverRunCmd.bin,
+        args: serverRunCmd.args,
       },
       debug: {
-        command: plz.binPath(),
-        args: ['tool', 'langserver', '-v', '4'],
+        command: serverDebugCmd.bin,
+        args: serverDebugCmd.args,
       },
     },
     {
@@ -37,5 +40,6 @@ export function startLanguageClient(): vscode.Disposable {
       revealOutputChannelOn: RevealOutputChannelOn.Never,
     }
   );
+
   return client.start();
 }

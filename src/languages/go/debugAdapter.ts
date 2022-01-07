@@ -3,11 +3,6 @@
  * Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------*/
 
-// This fork currently relies on some specifics of https://github.com/thought-machine/please/blob/master/rules/go_rules.build_defs:
-// - `--config=dbg` flag producing unoptimised code for debugging.
-// - Path trimming during code compilation.
-// - TESTS environment variable for targeting a specific test.
-
 import { ChildProcess, execFile, spawn } from 'child_process';
 import * as fs from 'fs';
 import { existsSync } from 'fs';
@@ -30,8 +25,8 @@ import {
   Thread,
 } from 'vscode-debugadapter';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { fixDriveCasingInWindows, getBinPath } from '../utils/pathUtils';
-import { killProcessTree } from '../utils/processUtils';
+import { fixDriveCasingInWindows, getBinPath } from '../../utils/pathUtils';
+import { killProcessTree } from '../../utils/processUtils';
 
 const fsAccess = util.promisify(fs.access);
 const fsUnlink = util.promisify(fs.unlink);
@@ -252,14 +247,14 @@ const fatalThrowID = -2;
 // The arguments below are usually surfaced to the user in the `package.json` file.
 interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
   request: 'launch';
-  target: string; // Please target
-  test?: string; // Specific test function
+  target: string; // Please target.
+  runtimeArgs: string[]; // Runtime args for the target.
   stopOnEntry?: boolean;
   repoRoot: string;
   plzBinPath: string;
-  dlvBinPath: string;
-  host?: string;
-  port?: number;
+  plzBinArgs: string[];
+  host: string;
+  port: number;
   substitutePath?: { from: string; to: string }[];
 }
 
@@ -381,33 +376,19 @@ export class Delve {
 
       if (!existsSync(launchArgs.plzBinPath)) {
         return reject(
-          'Cannot find Please. Install from https://github.com/thought-machine/please and ensure it is in the "PATH" environment variable.'
-        );
-      } else if (!existsSync(launchArgs.dlvBinPath)) {
-        return reject(
-          'Cannot find Delve debugger. Install from https://github.com/go-delve/delve & ensure it is in your Go tools path, "GOPATH/bin" or "PATH".'
+          'Cannot find Please. Get it from https://github.com/thought-machine/please.'
         );
       }
 
-      const dlvArgs: Array<string> = [
-        'exec',
-        './$OUT',
-        '--headless=true',
-        `--listen=${launchArgs.host}:${launchArgs.port}`,
-        '--api-version=2',
-        '--check-go-version=false',
-      ];
       const plzArgs: Array<string> = [
-        '--config=dbg',
+        ...launchArgs.plzBinArgs,
         '--plain_output',
         '--verbosity=info',
-        'exec',
-        '--share_network',
+        'debug',
+        `--port=${launchArgs.port}`,
         target,
         '--',
-        `TESTS=${launchArgs.test ?? ''} ${launchArgs.dlvBinPath} ${dlvArgs.join(
-          ' '
-        )}`,
+        ...launchArgs.runtimeArgs,
       ];
 
       log(`Running: ${launchArgs.plzBinPath} ${plzArgs.join(' ')}`);
@@ -1516,8 +1497,6 @@ export class GoDebugSession extends LoggingDebugSession {
     }
     args.host = '127.0.0.1';
     args.port = random(2000, 50000);
-    // This is necessary since we currently trim paths but VSCode sends full paths around
-    args.substitutePath = [{ from: args.repoRoot + '/', to: '' }];
 
     this.pathSeparator = findPathSeparator(args.repoRoot);
     this.substitutePath = [];

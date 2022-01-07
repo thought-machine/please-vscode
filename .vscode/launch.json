@@ -13,19 +13,21 @@
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "sourceMaps": true,
       "smartStep": true,
-      "preLaunchTask": "npm: compile"
+      "preLaunchTask": "npm: compile",
+      "envFile": "${workspaceFolder}/.env"
     },
     {
       "name": "Launch Go Debug Adapter as server",
       "type": "node",
       "protocol": "inspector",
       "request": "launch",
-      "program": "${workspaceFolder}/out/debugAdapters/goDebugAdapter.js",
+      "program": "${workspaceFolder}/out/src/languages/go/debugAdapter.js",
       "args": ["--server=4711"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "sourceMaps": true,
       "smartStep": true,
-      "preLaunchTask": "npm: compile"
+      "preLaunchTask": "npm: compile",
+      "envFile": "${workspaceFolder}/.env"
     }
   ],
   "compounds": [
