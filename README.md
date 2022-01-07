@@ -9,8 +9,8 @@ See https://please.build or https://github.com/thought-machine/please for more i
 ### Go language requirements
 
 - Go
-- [Delve](https://github.com/go-delve/delve).
-- [Go Outline](https://github.com/ramya-rao-a/go-outline).
+- [Delve](https://github.com/go-delve/delve)
+- [Go Outline](https://github.com/ramya-rao-a/go-outline)
 
 ### Python language requirements
 
