@@ -95,9 +95,7 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
           new vscode.CodeLens(range, {
             title: 'plz test',
             command: 'plz',
-            arguments: [
-              { command: 'test', args: ['--rerun', target], runtime: true },
-            ],
+            arguments: [{ command: 'test', args: ['--rerun', target] }],
           })
         );
       }

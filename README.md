@@ -23,6 +23,7 @@ See https://please.build or https://github.com/thought-machine/please for more i
 You can test and debug your changes by selecting **View > Run** and choosing **Launch Extension** from the dropdown menu. This will load a new VSCode window instance with the changes loaded in.
 
 If this extension needs to be tested against a locally built version of Please:
+
 - Create an `.env` file at the root of this project - it is gitignored.
 - Set `PLZ_LOCAL` to the location of the wanted binary.
 

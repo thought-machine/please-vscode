@@ -21,7 +21,9 @@ export async function plzDebugTargetCommand(args: {
       );
     }
 
-    const runtimeArgs = await argumentPrompt(`key-debug-${args.target}`);
+    const runtimeArgs = await argumentPrompt({
+      key: `key-debug-${args.target}`,
+    });
     // Terminate if `Escape` key was pressed.
     if (runtimeArgs === undefined) {
       return;

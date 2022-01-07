@@ -11,9 +11,9 @@ export async function plzCommand(args: {
 
   let runtimeArgs: string | undefined;
   if (runtime) {
-    runtimeArgs = await argumentPrompt(
-      `key-plz-${command}-${commandArgs.join('-')}`
-    );
+    runtimeArgs = await argumentPrompt({
+      key: `key-plz-${command}-${commandArgs.join('-')}`,
+    });
     // Terminate if `Escape` key was pressed.
     if (runtimeArgs === undefined) {
       return;
