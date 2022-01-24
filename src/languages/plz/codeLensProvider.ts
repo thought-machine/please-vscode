@@ -1,4 +1,4 @@
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -44,17 +44,12 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
 
     let ruleCalls: RuleCall[];
     try {
-      const content = execFileSync(
-        python3,
-        [
-          path.join(__dirname, '../../../scripts/rule_calls.py'),
-          document.fileName,
-        ],
-        { encoding: 'utf-8' }
-      );
+      const content = await getRuleCalls(python3, document.getText());
       ruleCalls = JSON.parse(content);
     } catch (e) {
-      vscode.window.showErrorMessage(e.message);
+      plz.outputChannel.appendLine(
+        `Error placing codelenses on '${document.fileName}': ${e.message}`
+      );
       return;
     }
 
@@ -120,4 +115,24 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
 
     return codeLens;
   }
+}
+
+async function getRuleCalls(
+  python3Path: string,
+  buildFileContents: string
+): Promise<string> {
+  return await new Promise<string>((resolve, reject) => {
+    const proc = execFile(
+      python3Path,
+      [path.join(__dirname, '../../../scripts/rule_calls.py')],
+      { encoding: 'utf-8' },
+      (err, stdout, stderr) => {
+        if (err || stderr) {
+          return reject(err || stderr);
+        }
+        resolve(stdout);
+      }
+    );
+    proc.stdin.end(buildFileContents);
+  });
 }

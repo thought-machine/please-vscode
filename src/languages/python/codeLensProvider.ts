@@ -1,7 +1,8 @@
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+import * as plz from '../../please';
 import { getBinPath } from '../../utils/pathUtils';
 
 // Test function location item structure returned by `scripts/test_functions.py`.
@@ -43,18 +44,13 @@ export class PythonTestCodeLensProvider implements vscode.CodeLensProvider {
           );
         }
       } else {
-        const content = execFileSync(
-          python3,
-          [
-            path.join(__dirname, '../../../scripts/test_functions.py'),
-            document.fileName,
-          ],
-          { encoding: 'utf-8' }
-        );
+        const content = await getTextFunctions(python3, document.getText());
         testFunctionLocations = JSON.parse(content);
       }
     } catch (e) {
-      vscode.window.showErrorMessage(e.message);
+      plz.outputChannel.appendLine(
+        `Error placing codelenses on '${document.fileName}': ${e.message}`
+      );
       return;
     }
 
@@ -105,4 +101,24 @@ export class PythonTestCodeLensProvider implements vscode.CodeLensProvider {
 
     return codeLens;
   }
+}
+
+async function getTextFunctions(
+  python3Path: string,
+  sourceFileContents: string
+): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const proc = execFile(
+      python3Path,
+      [path.join(__dirname, '../../../scripts/test_functions.py')],
+      { encoding: 'utf-8' },
+      (err, stdout, stderr) => {
+        if (err || stderr) {
+          return reject(err || stderr);
+        }
+        resolve(stdout);
+      }
+    );
+    proc.stdin.end(sourceFileContents);
+  });
 }
