@@ -108,6 +108,7 @@
     "prettify": "prettier --write ."
   },
   "dependencies": {
+    "clipboardy": "^2.3.0",
     "json-rpc2": "^2.0.0",
     "semver": "^7.3.5",
     "tree-kill": "file:third_party/tree-kill",

@@ -64,7 +64,21 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
         new vscode.Position(line - 1, 0)
       );
 
-      // Not all rules (i.e. filegroups) are buildable and since we don't have enough
+      // Copies the target onto the clipboard.
+      codeLens.push(
+        new vscode.CodeLens(range, {
+          title: '📋',
+          command: 'clipboard.write',
+          arguments: [
+            {
+              text: target,
+              message: `Target copied onto the clipboard: ${target}`,
+            },
+          ],
+        })
+      );
+
+      // Not all rules are buildable and since we don't have enough
       // information, this guarantees nothing is missed.
       codeLens.push(
         new vscode.CodeLens(range, {

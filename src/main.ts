@@ -2,6 +2,7 @@ import { execFileSync } from 'child_process';
 import * as vscode from 'vscode';
 
 import {
+  clipboardWriteCommand,
   plzCommand,
   plzDebugDocumentCommand,
   plzDebugTargetCommand,
@@ -63,6 +64,11 @@ export async function activate(context: vscode.ExtensionContext) {
   } catch (e) {
     vscode.window.showWarningMessage(e.message);
   }
+
+  // Set up clipboard writing functionality
+  context.subscriptions.push(
+    vscode.commands.registerCommand('clipboard.write', clipboardWriteCommand)
+  );
 
   // Setup Python debugging
   try {
