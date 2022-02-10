@@ -1,5 +1,5 @@
-import * as vscode from 'vscode';
 import * as clipboardy from 'clipboardy';
+import * as vscode from 'vscode';
 
 export function clipboardWriteCommand(args: {
   text: string;
@@ -7,6 +7,6 @@ export function clipboardWriteCommand(args: {
 }): void {
   clipboardy.writeSync(args.text);
 
-  const message = args.message ?? `Copied onto the clipboard: '${args.text}`;
+  const message = args.message || `Copied onto the clipboard: '${args.text}`;
   vscode.window.showInformationMessage(message);
 }
