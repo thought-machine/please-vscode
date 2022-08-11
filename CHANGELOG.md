@@ -1,3 +1,8 @@
+## 1.1.1 (August 11th, 2022)
+
+- Fallback to displaying the target onto the information box, because access to the clipboard will be from the context of the server when ssh'ing
+
+
 ## 1.1.0 (February 10th, 2022)
 
 - Add codelens emoji above target definitions that copies the target label onto the clipboard
