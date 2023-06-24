@@ -110,7 +110,7 @@
   "dependencies": {
     "clipboardy": "^2.3.0",
     "json-rpc2": "^2.0.0",
-    "semver": "^7.3.5",
+    "semver": "^7.5.2",
     "tree-kill": "file:third_party/tree-kill",
     "vscode-debugadapter": "^1.47.0",
     "vscode-debugprotocol": "^1.47.0",
