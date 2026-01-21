@@ -67,12 +67,12 @@ export function detachCommand(args: string[]): ChildProcessWithoutNullStreams {
 }
 
 // Runs a command with the intend of obtaining stdout. An error is throw if something fails.
-export function runCommand(args: string[], trimSpace = true): string {
+export function runCommand(args: string[], trimSpace = true, env = process.env): string {
   const plzCmd = cmd(args);
 
   const plz = spawnSync(plzCmd.bin, plzCmd.args, {
     cwd: workspacePath(),
-    env: process.env,
+    env,
   });
 
   if (plz.error) {
