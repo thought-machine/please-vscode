@@ -66,6 +66,29 @@ export function detachCommand(args: string[]): ChildProcessWithoutNullStreams {
   return plz;
 }
 
+// Runs a Please command inside the VS Code Integrated Terminal.
+export function runInTerminal(args: string[]): void {
+  const plzCmd = cmd(args);
+  const commandLine = `"${plzCmd.bin || 'plz'}" ${plzCmd.args.map(arg => {
+    // Escape arguments with quotes if they contain spaces or special characters
+    if (/[\s"'$&;<>()|*?~]/.test(arg)) {
+      return `"${arg.replace(/"/g, '\\"')}"`;
+    }
+    return arg;
+  }).join(' ')}`;
+
+  let terminal = vscode.window.terminals.find((t) => t.name === 'Please');
+  if (!terminal) {
+    terminal = vscode.window.createTerminal({
+      name: 'Please',
+      cwd: workspacePath(),
+    });
+  }
+
+  terminal.show(true);
+  terminal.sendText(commandLine);
+}
+
 // Runs a command with the intend of obtaining stdout. An error is throw if something fails.
 export function runCommand(args: string[], trimSpace = true, env = process.env): string {
   const plzCmd = cmd(args);

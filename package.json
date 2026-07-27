@@ -61,6 +61,22 @@
                       "type": "string",
                       "description": "The command to run (e.g. 'plz run', 'plz test', or any VS Code command)."
                     },
+                    "postfix_target": {
+                      "type": "string",
+                      "description": "An optional postfix to append to the target name (e.g. '_with_dev_ff')."
+                    },
+                    "postfixTarget": {
+                      "type": "string",
+                      "description": "An optional postfix to append to the target name (e.g. '_with_dev_ff')."
+                    },
+                    "terminal": {
+                      "type": "boolean",
+                      "description": "An optional override to force running this specific code lens in the Integrated Terminal (true) or background Output Channel (false)."
+                    },
+                    "Terminal": {
+                      "type": "boolean",
+                      "description": "An optional override to force running this specific code lens in the Integrated Terminal (true) or background Output Channel (false)."
+                    },
                     "arguments": {
                       "type": "array",
                       "items": {
@@ -77,6 +93,11 @@
               }
             }
           }
+        },
+        "please.runInTerminal": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to always run Please commands in the VS Code Integrated Terminal."
         }
       }
     },
