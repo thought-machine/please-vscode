@@ -40,6 +40,43 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the Please Language Server."
+        },
+        "please": {
+          "type": "object",
+          "default": {},
+          "description": "User-defined code lenses for specific Please rule names.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "code_lens": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "description": "The title of the code lens."
+                    },
+                    "command": {
+                      "type": "string",
+                      "description": "The command to run (e.g. 'plz run', 'plz test', or any VS Code command)."
+                    },
+                    "arguments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "Arguments to pass to the command. Supports referencing '${target}' or '$target'."
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "command"
+                  ]
+                }
+              }
+            }
+          }
         }
       }
     },

@@ -88,25 +88,101 @@ export class BuildFileCodeLensProvider implements vscode.CodeLensProvider {
         })
       );
 
-      // This check might not always be true but it is enough for now.
-      if (ruleName.endsWith('_binary')) {
-        codeLens.push(
-          new vscode.CodeLens(range, {
-            title: 'plz run',
-            command: 'plz',
-            arguments: [{ command: 'run', args: [target], runtime: true }],
-          })
-        );
+      let addedCustomLens = false;
+      const pleaseConfig = vscode.workspace
+        .getConfiguration()
+        .get<Record<string, any>>('please');
+        
+      if (pleaseConfig && typeof pleaseConfig === 'object') {
+        const ruleConfig = pleaseConfig[ruleName];
+        if (ruleConfig && typeof ruleConfig === 'object') {
+          const lenses = ruleConfig.code_lens || ruleConfig.codeLens;
+          if (Array.isArray(lenses)) {
+            for (const lens of lenses) {
+              const title = lens.title;
+              const command = lens.command || lens.Command;
+              const userArgs = lens.arguments || lens.Arguments || [];
+
+              if (title && command) {
+                let resolvedCommand = command;
+                let resolvedArgs: any[] = [];
+
+                const replaceTarget = (val: any): any => {
+                  if (typeof val === 'string') {
+                    return val
+                      .replace(/\${target}/g, target)
+                      .replace(/\$target/g, target);
+                  }
+                  if (Array.isArray(val)) {
+                    return val.map(replaceTarget);
+                  }
+                  if (val && typeof val === 'object') {
+                    const res: Record<string, any> = {};
+                    for (const k of Object.keys(val)) {
+                      res[k] = replaceTarget(val[k]);
+                    }
+                    return res;
+                  }
+                  return val;
+                };
+
+                const parts = command.trim().split(/\s+/);
+                if (parts[0] === 'plz' && parts.length > 1) {
+                  resolvedCommand = 'plz';
+                  const processedUserArgs = userArgs.map(replaceTarget);
+                  const containsTarget =
+                    JSON.stringify(userArgs).includes('${target}') ||
+                    JSON.stringify(userArgs).includes('$target');
+                  const finalSubArgs = containsTarget
+                    ? processedUserArgs
+                    : [target, ...processedUserArgs];
+
+                  resolvedArgs = [
+                    {
+                      command: parts[1],
+                      args: finalSubArgs,
+                    },
+                  ];
+                } else {
+                  resolvedArgs = userArgs.map(replaceTarget);
+                }
+
+                codeLens.push(
+                  new vscode.CodeLens(range, {
+                    title,
+                    command: resolvedCommand,
+                    arguments: resolvedArgs,
+                  })
+                );
+                addedCustomLens = true;
+              }
+            }
+          }
+        }
       }
-      // This check might not always be true but it is enough for now.
-      else if (ruleName.endsWith('_test')) {
-        codeLens.push(
-          new vscode.CodeLens(range, {
-            title: 'plz test',
-            command: 'plz',
-            arguments: [{ command: 'test', args: ['--rerun', target] }],
-          })
-        );
+
+      if (!addedCustomLens) {
+        // This check might not always be true but it is enough for now.
+        if (ruleName.endsWith('_binary')) {
+          codeLens.push(
+            new vscode.CodeLens(range, {
+              title: 'plz run',
+              command: 'plz',
+              arguments: [{ command: 'run', args: [target], runtime: true }],
+            })
+          );
+        }
+        // This check might not always be true but it is enough for now.
+        else if (ruleName.endsWith('_test')) {
+          codeLens.push(
+            new vscode.CodeLens(range, {
+              title: 'plz test',
+              command: 'plz',
+              arguments: [{ command: 'test', args: ['--rerun', target] }],
+            })
+          );
+        } 
+      
       }
 
       if (

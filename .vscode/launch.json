@@ -13,7 +13,7 @@
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "sourceMaps": true,
       "smartStep": true,
-      "preLaunchTask": "npm: compile",
+      //"preLaunchTask": "npm: compile",
       "envFile": "${workspaceFolder}/.env"
     },
     {
