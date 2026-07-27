@@ -161,8 +161,8 @@ interface CustomCodeLensConfig {
   title?: string;
   command?: string;
   Command?: string; // support user typo casing
-  postfix_target?: string;
-  postfixTarget?: string; // support camelCase
+  postfix_target?: string | string[];
+  postfixTarget?: string | string[]; // support camelCase
   terminal?: boolean;
   Terminal?: boolean; // support user typo casing
   arguments?: unknown[];
@@ -205,63 +205,77 @@ function getCustomCodeLenses(
     const title = lens.title;
     const command = lens.command || lens.Command;
     const userArgs = lens.arguments || lens.Arguments || [];
-    const postfix = lens.postfix_target || lens.postfixTarget || '';
-    const resolvedTarget = target + postfix;
 
-    if (title && command) {
-      let resolvedCommand = command;
-      let resolvedArgs: unknown[] = [];
+    const rawPostfix = lens.postfix_target !== undefined ? lens.postfix_target : lens.postfixTarget;
+    const postfixes: string[] = Array.isArray(rawPostfix)
+      ? rawPostfix
+      : typeof rawPostfix === 'string'
+      ? [rawPostfix]
+      : [''];
 
-      const replaceTarget = (val: unknown): unknown => {
-        if (typeof val === 'string') {
-          return val
-            .replace(/\${target}/g, resolvedTarget)
-            .replace(/\$target/g, resolvedTarget);
-        }
-        if (Array.isArray(val)) {
-          return val.map(replaceTarget);
-        }
-        if (val && typeof val === 'object') {
-          const res: Record<string, unknown> = {};
-          for (const k of Object.keys(val)) {
-            res[k] = replaceTarget((val as Record<string, unknown>)[k]);
+    for (const postfix of postfixes) {
+      const resolvedTarget = target + postfix;
+      // If an array of multiple postfixes is provided, make code lens titles distinct
+      const resolvedTitle =
+        title && Array.isArray(rawPostfix) && rawPostfix.length > 1
+          ? `${title} (${postfix})`
+          : title;
+
+      if (resolvedTitle && command) {
+        let resolvedCommand = command;
+        let resolvedArgs: unknown[] = [];
+
+        const replaceTarget = (val: unknown): unknown => {
+          if (typeof val === 'string') {
+            return val
+              .replace(/\${target}/g, resolvedTarget)
+              .replace(/\$target/g, resolvedTarget);
           }
-          return res;
+          if (Array.isArray(val)) {
+            return val.map(replaceTarget);
+          }
+          if (val && typeof val === 'object') {
+            const res: Record<string, unknown> = {};
+            for (const k of Object.keys(val)) {
+              res[k] = replaceTarget((val as Record<string, unknown>)[k]);
+            }
+            return res;
+          }
+          return val;
+        };
+
+        const parts = command.trim().split(/\s+/);
+        if (parts[0] === 'plz' && parts.length > 1) {
+          resolvedCommand = 'plz';
+          const processedUserArgs = userArgs.map(replaceTarget);
+          const containsTarget =
+            JSON.stringify(userArgs).includes('${target}') ||
+            JSON.stringify(userArgs).includes('$target');
+          const finalSubArgs = containsTarget
+            ? processedUserArgs
+            : [resolvedTarget, ...processedUserArgs];
+
+          const terminalFlag = lens.terminal !== undefined ? lens.terminal : lens.Terminal;
+
+          resolvedArgs = [
+            {
+              command: parts[1],
+              args: finalSubArgs,
+              ...(terminalFlag !== undefined ? { terminal: terminalFlag } : {})
+            },
+          ];
+        } else {
+          resolvedArgs = userArgs.map(replaceTarget);
         }
-        return val;
-      };
 
-      const parts = command.trim().split(/\s+/);
-      if (parts[0] === 'plz' && parts.length > 1) {
-        resolvedCommand = 'plz';
-        const processedUserArgs = userArgs.map(replaceTarget);
-        const containsTarget =
-          JSON.stringify(userArgs).includes('${target}') ||
-          JSON.stringify(userArgs).includes('$target');
-        const finalSubArgs = containsTarget
-          ? processedUserArgs
-          : [resolvedTarget, ...processedUserArgs];
-
-        const terminalFlag = lens.terminal !== undefined ? lens.terminal : lens.Terminal;
-
-        resolvedArgs = [
-          {
-            command: parts[1],
-            args: finalSubArgs,
-            ...(terminalFlag !== undefined ? { terminal: terminalFlag } : {})
-          },
-        ];
-      } else {
-        resolvedArgs = userArgs.map(replaceTarget);
+        codeLenses.push(
+          new vscode.CodeLens(range, {
+            title: resolvedTitle,
+            command: resolvedCommand,
+            arguments: resolvedArgs,
+          })
+        );
       }
-
-      codeLenses.push(
-        new vscode.CodeLens(range, {
-          title,
-          command: resolvedCommand,
-          arguments: resolvedArgs,
-        })
-      );
     }
   }
 

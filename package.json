@@ -62,12 +62,32 @@
                       "description": "The command to run (e.g. 'plz run', 'plz test', or any VS Code command)."
                     },
                     "postfix_target": {
-                      "type": "string",
-                      "description": "An optional postfix to append to the target name (e.g. '_with_dev_ff')."
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "description": "An optional postfix or array of postfixes to append to the target name. If an array is provided, a separate CodeLens will be created for each postfix."
                     },
                     "postfixTarget": {
-                      "type": "string",
-                      "description": "An optional postfix to append to the target name (e.g. '_with_dev_ff')."
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ],
+                      "description": "An optional postfix or array of postfixes to append to the target name. If an array is provided, a separate CodeLens will be created for each postfix."
                     },
                     "terminal": {
                       "type": "boolean",
